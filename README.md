@@ -16,6 +16,7 @@ Built with scalability and accessibility in mind, each tool is purpose-built for
 Frontend:
 React (Next.js)
 Tailwind CSS
+Redux
 
 Backend:
 Node.js + Express
