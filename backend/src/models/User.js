@@ -39,14 +39,27 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ['analyst','researcher', 'admin'],
+        enum: ['analyst', 'researcher', 'admin'],
         default: 'user',
     },
     password: {
         type: String,
         required: true,
         minlength: 6,
-    }
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    otp: {
+        type: String,
+    },
+    otpExpires: {
+        type: Date,
+    },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+
 }, {
     timestamps: true,
 });

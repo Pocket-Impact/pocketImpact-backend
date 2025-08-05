@@ -6,6 +6,8 @@ export const createToken = (userId) => {
         expiresIn: '1d',
     });
 }
+
+
 export const protect = async(req, res, next) => {
     const token = req.cookies.jwt;
     if (!token) {
@@ -32,4 +34,14 @@ export const restrictTo = (...roles) => {
         }
         next();
     };
+};
+
+export const requireVerifiedUser = async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user || !user.isVerified) {
+    return res.status(403).json({ message: "Please verify your email to continue." });
+  }
+
+  next();
 };

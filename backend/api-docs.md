@@ -24,12 +24,13 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 
 ---
 
+
 ## 1. Authentication
 
 ### Signup
 
 - **Endpoint:** `POST /api/auth/signup`
-- **Description:** Register a new organisation and admin user.
+- **Description:** Register a new organisation and admin user. Sends an OTP to the provided email for verification.
 - **Request Body:**
   - `fullname` (string, required)
   - `email` (string, required)
@@ -39,20 +40,89 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
   - `organisationSize` (string: 'small' | 'medium' | 'large', required)
   - `password` (string, required)
 - **Responses:**
-  - `201 Created`: User created successfully.
+  - `201 Created`: User created successfully, OTP sent to email.
   - `400 Bad Request`: Missing fields, organisation or email already exists.
   - `500 Internal Server Error`: Server error.
+
 
 ### Login
 
 - **Endpoint:** `POST /api/auth/login`
-- **Description:** Login with email and password.
+- **Description:** Login with email and password. Only verified users can log in.
 - **Request Body:**
   - `email` (string, required)
   - `password` (string, required)
 - **Responses:**
   - `200 OK`: Login successful, JWT cookie set.
-  - `400 Bad Request`: Invalid credentials.
+  - `400 Bad Request`: Invalid credentials or user not verified.
+
+### Verify OTP
+
+- **Endpoint:** `POST /api/auth/verify-otp`
+- **Description:** Verify the OTP sent to the user's email to activate the account.
+- **Middleware:** `protect`
+- **Request Body:**
+  - `email` (string, required)
+  - `otp` (string, required)
+- **Responses:**
+  - `200 OK`: Account verified successfully.
+  - `400 Bad Request`: Invalid or expired OTP, already verified.
+  - `404 Not Found`: User not found.
+  - `500 Internal Server Error`: Server error.
+
+### Resend OTP
+
+- **Endpoint:** `GET /api/auth/resend-otp`
+- **Description:** Resend a new OTP to the user's email if not yet verified.
+- **Middleware:** `protect`
+- **Responses:**
+  - `200 OK`: New OTP sent to your email.
+  - `400 Bad Request`: User already verified.
+  - `404 Not Found`: User not found.
+  - `500 Internal Server Error`: Server error.
+
+### Forgot Password
+
+- **Endpoint:** `POST /api/auth/forgot-password`
+- **Description:** Request a password reset link to be sent to the user's email.
+- **Request Body:**
+  - `email` (string, required)
+- **Responses:**
+  - `200 OK`: Password reset link sent to your email.
+  - `404 Not Found`: User not found.
+  - `500 Internal Server Error`: Server error.
+
+### Reset Password
+
+- **Endpoint:** `POST /api/auth/reset-password`
+- **Description:** Reset password using the token sent to email.
+- **Request Body:**
+  - `token` (string, required)
+  - `newPassword` (string, required)
+- **Responses:**
+  - `200 OK`: Password has been reset successfully.
+  - `400 Bad Request`: Invalid or expired token.
+  - `500 Internal Server Error`: Server error.
+
+### Change Password
+
+- **Endpoint:** `POST /api/auth/change-password`
+- **Description:** Change password for a logged-in user.
+- **Middleware:** `protect`
+- **Request Body:**
+  - `oldPassword` (string, required)
+  - `newPassword` (string, required)
+- **Responses:**
+  - `200 OK`: Password changed successfully.
+  - `400 Bad Request`: Incorrect current password or missing fields.
+  - `500 Internal Server Error`: Server error.
+
+### Logout
+
+- **Endpoint:** `POST /api/auth/logout`
+- **Description:** Log out the current user (clears JWT cookie).
+- **Responses:**
+  - `200 OK`: Logout successful.
 
 ---
 
@@ -90,12 +160,17 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 
 - Checks for JWT in cookies.
 - Verifies token and attaches user info to `req.user`.
-- Returns `401 Unauthorized` if invalid.
+- Returns `401 Unauthorized` if invalid or missing.
 
 ### restrictTo(...roles)
 
 - Restricts access to users with specified roles.
 - Returns `403 Forbidden` if user role is not allowed.
+
+### requireVerifiedUser
+
+- Ensures the user is verified before allowing access to certain routes.
+- Returns `403 Forbidden` if user is not verified.
 
 ---
 
@@ -103,22 +178,38 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 
 ### Organisation
 
-- `organisationName` (string, required, unique)
-- `organisationCountry` (string, required)
-- `organisationSize` (string: 'small' | 'medium' | 'large', required)
+- `organisationName` (string, required, unique): Name of the organisation.
+- `organisationCountry` (string, required): Country where the organisation is based.
+- `organisationSize` (string: 'small' | 'medium' | 'large', required): Size of the organisation.
 
 ### User
 
-- `fullname` (string, required)
-- `email` (string, required, unique, validated)
-- `phonenumber` (string, required, validated)
-- `organisation` (ObjectId, ref: Organisation, required)
-- `role` (string: 'analyst' | 'researcher' | 'admin', required)
-- `password` (string, required, hashed)
+- `fullname` (string, required): Full name of the user.
+- `email` (string, required, unique, validated): User's email address.
+- `phonenumber` (string, required, validated): User's phone number.
+- `organisation` (ObjectId, ref: Organisation, required): Reference to the organisation.
+- `role` (string: 'analyst' | 'researcher' | 'admin', required): User's role in the organisation.
+- `password` (string, required, hashed): User's password (hashed).
+- `isVerified` (boolean, default: false): Whether the user's email is verified.
+- `otp` (string): One-time password for email verification.
+- `otpExpires` (Date): Expiry time for the OTP.
+
+---
+## 5. Utilities
+
+### generateOtp
+
+- Generates a 6-digit OTP and expiration time (10 minutes from now).
+- Used for account/email verification.
+
+### sendEmail
+
+- Sends an email using SendGrid.
+- Used for sending OTPs and notifications.
 
 ---
 
-## 5. Database Connection
+## 6. Database Connection
 
 - MongoDB connection via Mongoose.
 - URI from `DB_URI` env variable or defaults to `mongodb://localhost:27017/pocket-impact`.
