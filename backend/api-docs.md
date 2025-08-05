@@ -207,6 +207,10 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 - Sends an email using SendGrid.
 - Used for sending OTPs and notifications.
 
+### generatePassword
+
+- Generates a 12-character password 
+- Used for members added to organisations
 ---
 
 ## 6. Database Connection
@@ -215,3 +219,4 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 - URI from `DB_URI` env variable or defaults to `mongodb://localhost:27017/pocket-impact`.
 
 ---
+
