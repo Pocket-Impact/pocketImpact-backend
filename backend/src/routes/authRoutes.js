@@ -8,7 +8,7 @@ router.post('/signup', create_new_account);
 router.post('/login', login);
 router.get('/logout',logout);
 router.post('/forgot-password',forgotPassword);
-router.get('/reset-password', resetPassword);
+router.post('/reset-password', resetPassword);
 
 
 
