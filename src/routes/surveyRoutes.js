@@ -1,0 +1,15 @@
+import { Router } from "express";
+import { createSurvey, getSurveysByOrganisation, getSurveryByUniqueLinkId, sendEmailsWithSurveyLink } from "../controllers/surveyController.js";
+import { protect, restrictTo, requireVerifiedUser } from "../middlewares/authMiddleware.js";
+
+const router = Router();
+// Route to create a new survey
+router.post('/', protect, requireVerifiedUser, restrictTo('admin','analyst'), createSurvey);
+// Route to get all surveys for an organisation
+router.get('/:organisationId', protect, requireVerifiedUser, restrictTo('admin', 'analyst', 'researcher'), getSurveysByOrganisation);
+
+// Route to send survey link via email
+router.post('/send-survey-link', protect, requireVerifiedUser, restrictTo('admin', 'analyst'), sendEmailsWithSurveyLink);
+// Route to get a survey by unique link ID
+router.get('/unique/:uniqueLinkId', getSurveryByUniqueLinkId);
+export default router;

@@ -10,7 +10,6 @@ router.get('/logout',logout);
 router.post('/refresh-token', refresh);
 
 // Password reset routes
-router.post('/reset-password', resetPassword);
 router.post('/forgot-password',forgotPassword);
 router.post('/reset-password', resetPassword);
 

@@ -36,12 +36,15 @@ npm install
 
 ## 4. Creating the .env File
 
+
+
 Create a `.env` file inside the `backend` directory with the following variables:
 
 ```
 PORT=5000
 MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
+ACCESS_TOKEN_SECRET=your_ACCESS_TOKEN_SECRET
+REFRESH_TOKEN_SECRET=your_REFRESH_TOKEN_SECRET
 SENDGRID_API_KEY=your_sendgrid_api_key
 FROM_EMAIL=your_verified_sender@email.com
 ```
@@ -51,7 +54,8 @@ FROM_EMAIL=your_verified_sender@email.com
 ```
 PORT=5000
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/pocket-impact
-JWT_SECRET=supersecretkey
+ACCESS_TOKEN_SECRET=superaccesstokensecret
+REFRESH_TOKEN_SECRET=superrefreshtokensecret
 SENDGRID_API_KEY=SG.xxxxxxxx
 FROM_EMAIL=verified@yourdomain.com
 ```
@@ -66,23 +70,44 @@ Start the backend server in development mode:
 npm run dev
 ```
 
-The server will start at [http://localhost:5000]
+
+The server will start at [http://localhost:5000](http://localhost:5000).
 
 ---
 
 ## 6. Testing the API
 
+
+
 You can use tools like [Postman](https://www.postman.com/) or [Thunder Client](https://www.thunderclient.com/) to test API routes such as:
 
 - `POST /api/auth/signup`
-- `POST /api/auth/login`
+- `POST /api/auth/login` *(returns access and refresh tokens as cookies)*
 - `POST /api/auth/verify-otp`
 - `GET /api/auth/resend-otp`
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
+- `POST /api/auth/change-password`
+- `POST /api/auth/logout`
+- `POST /api/auth/refresh-token` *(get new access token using refresh token)*
 
 ---
 
 ## 7. Frontend Connection
 
+
+
 This backend is designed to connect to a frontend client (e.g. Next.js) running at [http://localhost:3000]
+
+---
+
+## 8. Notes
+
+
+- **Never push your `.env` file to GitHub or share it publicly.**
+- Use a SendGrid account with a verified sender email address.
+- Ensure your MongoDB URI is valid and accessible.
+- For production, use strong secrets and secure environment variables.
+- Refresh tokens should be stored securely (httpOnly cookies or server-side).
+- Access tokens are short-lived; use `/api/auth/refresh-token` to get a new one when expired.
+- JWT authentication is used for all protected routes.

@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { generateOtp } from "../utils/generateOTP.js";
 import generatingPassword from "../utils/generatePassword.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
@@ -89,7 +90,7 @@ export const verifyOTP = async (req, res) => {
 
 
 
-export const resendOTP = async (req, res) => {
+export const  resendOTP = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 

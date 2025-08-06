@@ -45,16 +45,27 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
   - `500 Internal Server Error`: Server error.
 
 
+
 ### Login
 
 - **Endpoint:** `POST /api/auth/login`
-- **Description:** Login with email and password. Only verified users can log in.
+- **Description:** Login with email and password. Only verified users can log in. Returns access and refresh tokens.
 - **Request Body:**
   - `email` (string, required)
   - `password` (string, required)
 - **Responses:**
-  - `200 OK`: Login successful, JWT cookie set.
+  - `200 OK`: Login successful, access token and refresh token set (usually as cookies).
   - `400 Bad Request`: Invalid credentials or user not verified.
+
+### Refresh Token
+
+- **Endpoint:** `POST /api/auth/refresh-token`
+- **Description:** Use a valid refresh token to obtain a new access token when the old one expires.
+- **Request Body:**
+  - `refreshToken` (string, required) *(or sent as httpOnly cookie)*
+- **Responses:**
+  - `200 OK`: New access token issued.
+  - `401 Unauthorized`: Invalid or expired refresh token.
 
 ### Verify OTP
 
@@ -182,6 +193,8 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 - `organisationCountry` (string, required): Country where the organisation is based.
 - `organisationSize` (string: 'small' | 'medium' | 'large', required): Size of the organisation.
 
+
+
 ### User
 
 - `fullname` (string, required): Full name of the user.
@@ -193,6 +206,8 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 - `isVerified` (boolean, default: false): Whether the user's email is verified.
 - `otp` (string): One-time password for email verification.
 - `otpExpires` (Date): Expiry time for the OTP.
+- `resetPasswordToken` (string): Token for password reset.
+- `resetPasswordExpires` (Date): Expiry time for password reset token.
 
 ---
 ## 5. Utilities

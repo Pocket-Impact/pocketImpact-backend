@@ -86,7 +86,7 @@ userSchema.statics.login = async function (email, password) {
         }
         throw new Error('Incorrect email or password!');
     }
-    throw new Error('Incorrect email or password');
+    throw new Error('Incorrect email or password!');
 }
 
 
