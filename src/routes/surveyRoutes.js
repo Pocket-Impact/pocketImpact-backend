@@ -12,4 +12,10 @@ router.get('/:organisationId', protect, requireVerifiedUser, restrictTo('admin',
 router.post('/send-survey-link', protect, requireVerifiedUser, restrictTo('admin', 'analyst'), sendEmailsWithSurveyLink);
 // Route to get a survey by unique link ID
 router.get('/unique/:uniqueLinkId', getSurveryByUniqueLinkId);
+
+// Route to delete a survey by ID
+router.delete('/:surveyId', protect, requireVerifiedUser, restrictTo('admin', 'analyst'), deleteSurveyById);
+// Route to update a survey by ID
+router.put('/:surveyId', protect, requireVerifiedUser, restrictTo('admin', 'analyst'), updateSurveyById);
+
 export default router;

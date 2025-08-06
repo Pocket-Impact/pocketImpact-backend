@@ -43,8 +43,8 @@ Create a `.env` file inside the `backend` directory with the following variables
 ```
 PORT=5000
 MONGO_URI=your_mongodb_uri
-ACCESS_TOKEN_SECRET=your_ACCESS_TOKEN_SECRET
-REFRESH_TOKEN_SECRET=your_REFRESH_TOKEN_SECRET
+ACCESS_TOKEN_SECRET=your_access_token_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
 SENDGRID_API_KEY=your_sendgrid_api_key
 FROM_EMAIL=your_verified_sender@email.com
 ```
@@ -97,7 +97,7 @@ You can use tools like [Postman](https://www.postman.com/) or [Thunder Client](h
 
 
 
-This backend is designed to connect to a frontend client (e.g. Next.js) running at [http://localhost:3000]
+This backend is designed to connect to a frontend client (e.g. Next.js) running at [http://localhost:3000].
 
 ---
 
@@ -111,3 +111,4 @@ This backend is designed to connect to a frontend client (e.g. Next.js) running 
 - Refresh tokens should be stored securely (httpOnly cookies or server-side).
 - Access tokens are short-lived; use `/api/auth/refresh-token` to get a new one when expired.
 - JWT authentication is used for all protected routes.
+- Make sure your environment variable names match those expected in your code (e.g. `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`).
