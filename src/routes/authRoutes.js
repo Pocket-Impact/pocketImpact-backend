@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create_new_account, forgotPassword, login, logout, resetPassword} from "../controllers/authController.js";
+import { create_new_account, forgotPassword, login, logout, refresh, resetPassword} from "../controllers/authController.js";
 
 const router = Router();
 
@@ -7,6 +7,10 @@ const router = Router();
 router.post('/signup', create_new_account);
 router.post('/login', login);
 router.get('/logout',logout);
+router.post('/refresh-token', refresh);
+
+// Password reset routes
+router.post('/reset-password', resetPassword);
 router.post('/forgot-password',forgotPassword);
 router.post('/reset-password', resetPassword);
 

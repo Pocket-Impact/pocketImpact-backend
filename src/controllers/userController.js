@@ -1,4 +1,3 @@
-import { createToken } from "../middlewares/authMiddleware.js";
 import User from "../models/User.js";
 import generatingPassword from "../utils/generatePassword.js";
 import { sendEmail } from "../utils/sendEmail.js";
@@ -12,9 +11,6 @@ export const add_user_to_organisation = async (req, res) => {
         if (!fullname || !email || !role|| !phonenumber) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        //hash the generated password
-
-
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -46,7 +42,7 @@ export const add_user_to_organisation = async (req, res) => {
         const text = `Hello ${fullname},\n\nYour account has been created successfully. Here are your login details:\n\nEmail: ${email}\nPassword: ${generatedPassword}\n\nPlease log in and change your password as soon as possible.\n\nBest regards,\nPocket Impact Team`;
         await sendEmail(email, subject, text);
 
-        res.status(201).json({ message: "User added successfully", user });
+        res.status(201).json({ message: `We sent a verification code on ${email} please check it before it expires`,  });
     } catch (error) {
         console.error("Error during adding user:", error.message);
         res.status(500).json({ message: "Internal server error", error: error.message });

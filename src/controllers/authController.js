@@ -1,4 +1,4 @@
-import { createToken } from "../middlewares/authMiddleware.js";
+import { generateAccessToken, generateRefreshToken } from "../middlewares/authMiddleware.js";
 import Organisation from "../models/Organisation.js";
 import User from "../models/User.js";
 import { generateOtp } from "../utils/generateOTP.js";
@@ -86,14 +86,9 @@ export const login = async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: "Invalid email or password" });
         }
-        const token = createToken(user._id);
-        const maxAge = 3 * 24 * 60 * 60;
-        res.cookie('jwt', token, {
-            maxAge: maxAge * 1000,
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+        const accessToken = generateAccessToken(user._id); 
+        const refreshToken = generateRefreshToken(user._id);
 
-        });
         res.status(200).json({
             message: "Login successful", user: {
                 id: user._id,
@@ -106,6 +101,32 @@ export const login = async (req, res) => {
         console.error("Error during login:", error.message);
         res.status(400).json({ message: "Invalid email or password", error: error.message });
     }
+};
+
+export const refresh = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token missing' });
+  }
+
+  jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid refresh token' });
+    }
+
+    const newAccessToken = jwt.sign({ id: decoded.id }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '15m'
+    });
+
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Strict',
+      maxAge: 15 * 60 * 1000 // 15 min
+    });
+
+    return res.status(200).json({ message: 'Token refreshed' });
+  });
 };
 
 export const changePassword = async (req, res) => {
