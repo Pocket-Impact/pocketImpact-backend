@@ -1,11 +1,13 @@
 {
   "name": "backend",
+  "type": "module",
   "version": "1.0.0",
   "description": "logic for pocket impact tools",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -29,11 +31,14 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "generate-password": "^1.7.1",
+    "jest": "^30.0.5",
+    "joi": "^18.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0"
   },
   "devDependencies": {
     "eslint": "^9.32.0",
+    "node-mocks-http": "^1.17.2",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2"
   }

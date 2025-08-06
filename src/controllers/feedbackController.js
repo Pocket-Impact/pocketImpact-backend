@@ -12,10 +12,14 @@ export const submitFeedback = async (req, res) => {
             feedbacks
         })
         await newFeedback.save();
-        res.status(201).json({ message: "Feedback submitted successfully." });
+        res.status(201).json({
+          status: "success",
+          message: "Feedback submitted successfully.",
+          data: { feedback: newFeedback }
+        });
     } catch (error) {
-        console.error("Error submitting feedback:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error submitting feedback:", error);
+        res.status(500).json({ message: "Could not submit feedback. Please try again later." });
     }
 };
 
@@ -31,9 +35,13 @@ export const getFeedbackBySurvey = async (req, res) => {
         if (feedbacks.length === 0) {
             return res.status(404).json({ message: "No feedback found for this survey." });
         }
-        res.status(200).json(feedbacks);
+        res.status(200).json({
+          status: "success",
+          message: "Feedback fetched successfully.",
+          data: { feedbacks }
+        });
     } catch (error) {
-        console.error("Error fetching feedback:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error fetching feedback:", error);
+        res.status(500).json({ message: "Could not fetch feedback. Please try again later." });
     }
 };

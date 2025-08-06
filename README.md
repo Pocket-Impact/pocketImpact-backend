@@ -79,9 +79,27 @@ The server will start at [http://localhost:5000](http://localhost:5000).
 
 
 
-You can use tools like [Postman](https://www.postman.com/) or [Thunder Client](https://www.thunderclient.com/) to test API routes such as:
 
-- `POST /api/auth/signup`
+You can use tools like [Postman](https://www.postman.com/) or [Thunder Client](https://www.thunderclient.com/) to test API routes. All successful responses use:
+
+```json
+{
+  "status": "success",
+  "message": "...",
+  "data": { ... }
+}
+```
+All error responses use:
+```json
+{
+  "status": "fail",
+  "message": "..."
+}
+```
+
+### Example API Routes
+
+- `POST /api/auth/signup` (see api-docs for example body)
 - `POST /api/auth/login` *(returns access and refresh tokens as cookies)*
 - `POST /api/auth/verify-otp`
 - `GET /api/auth/resend-otp`
@@ -90,6 +108,9 @@ You can use tools like [Postman](https://www.postman.com/) or [Thunder Client](h
 - `POST /api/auth/change-password`
 - `POST /api/auth/logout`
 - `POST /api/auth/refresh-token` *(get new access token using refresh token)*
+- `POST /api/users/add-user`
+- `POST /api/surveys` *(create survey)*
+- `POST /api/feedback` *(submit feedback)*
 
 ---
 
@@ -104,11 +125,15 @@ This backend is designed to connect to a frontend client (e.g. Next.js) running 
 ## 8. Notes
 
 
+
 - **Never push your `.env` file to GitHub or share it publicly.**
 - Use a SendGrid account with a verified sender email address.
 - Ensure your MongoDB URI is valid and accessible.
 - For production, use strong secrets and secure environment variables.
-- Refresh tokens should be stored securely (httpOnly cookies or server-side).
+- Refresh tokens are stored securely as httpOnly cookies.
 - Access tokens are short-lived; use `/api/auth/refresh-token` to get a new one when expired.
 - JWT authentication is used for all protected routes.
+- All request bodies are validated using Joi schemas (see `src/schemas/`).
+- All responses are standardized for frontend consumption.
 - Make sure your environment variable names match those expected in your code (e.g. `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`).
+- Run tests with `npm run test` (see `src/tests/`).

@@ -64,16 +64,77 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ## 1. Authentication
 
 ### Signup
-- **Endpoint:** `POST /api/auth/signup`
-- **Description:** Register a new organisation and admin user. Sends an OTP to the provided email for verification.
-- **Request Body:** `fullname`, `email`, `phonenumber`, `organisationName`, `organisationCountry`, `organisationSize`, `password`
-- **Responses:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Endpoint:** `POST /api/auth/signup`
+**Description:** Register a new organisation and admin user. Sends an OTP to the provided email for verification.
+**Request Body:**
+```json
+{
+  "fullname": "Jane Doe",
+  "email": "jane@example.com",
+  "phonenumber": "+1234567890",
+  "organisationName": "Acme Corp",
+  "organisationCountry": "USA",
+  "organisationSize": "medium",
+  "password": "securePassword123"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "User created successfully",
+  "data": {
+    "user": {
+      "id": "userId",
+      "fullname": "Jane Doe",
+      "email": "jane@example.com",
+      "role": "admin"
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "All fields are required"
+}
+```
+`201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Login
-- **Endpoint:** `POST /api/auth/login`
-- **Description:** Login with email and password. Returns access and refresh tokens.
-- **Request Body:** `email`, `password`
-- **Responses:** `200 OK`, `400 Bad Request`
+**Endpoint:** `POST /api/auth/login`
+**Description:** Login with email and password. Returns access and refresh tokens.
+**Request Body:**
+```json
+{
+  "email": "jane@example.com",
+  "password": "securePassword123"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Login successful",
+  "data": {
+    "user": {
+      "id": "userId",
+      "fullname": "Jane Doe",
+      "email": "jane@example.com",
+      "role": "admin"
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Email and password are required"
+}
+```
+`200 OK`, `400 Bad Request`
 
 ### Refresh Token
 - **Endpoint:** `POST /api/auth/refresh-token`
@@ -82,33 +143,136 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 - **Responses:** `200 OK`, `401 Unauthorized`
 
 ### Verify OTP
-- **Endpoint:** `POST /api/auth/verify-otp`
-- **Description:** Verify the OTP sent to the user's email.
-- **Request Body:** `email`, `otp`
-- **Responses:** `200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
+**Endpoint:** `POST /api/auth/verify-otp`
+**Description:** Verify the OTP sent to the user's email.
+**Request Body:**
+```json
+{
+  "email": "jane@example.com",
+  "otp": "123456"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Account verified successfully",
+  "data": {
+    "user": {
+      "id": "userId",
+      "email": "jane@example.com",
+      "isVerified": true
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Invalid OTP"
+}
+```
+`200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
 
 ### Resend OTP
-- **Endpoint:** `GET /api/auth/resend-otp`
-- **Description:** Resend a new OTP to the user's email.
-- **Responses:** `200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
+**Endpoint:** `GET /api/auth/resend-otp`
+**Description:** Resend a new OTP to the user's email.
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "New OTP sent to your email",
+  "data": {
+    "email": "jane@example.com"
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "User not found"
+}
+```
+`200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
 
 ### Forgot Password
-- **Endpoint:** `POST /api/auth/forgot-password`
-- **Description:** Request a password reset link.
-- **Request Body:** `email`
-- **Responses:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Endpoint:** `POST /api/auth/forgot-password`
+**Description:** Request a password reset link.
+**Request Body:**
+```json
+{
+  "email": "jane@example.com"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Password reset link sent to your email."
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "No account found with that email address."
+}
+```
+`200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 ### Reset Password
-- **Endpoint:** `POST /api/auth/reset-password`
-- **Description:** Reset password using the token sent to email.
-- **Request Body:** `token`, `newPassword`
-- **Responses:** `200 OK`, `400 Bad Request`, `500 Internal Server Error`
+**Endpoint:** `POST /api/auth/reset-password`
+**Description:** Reset password using the token sent to email.
+**Request Body:**
+```json
+{
+  "token": "abcdef123456",
+  "newPassword": "newSecurePassword456"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Password has been reset successfully."
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Invalid or expired password reset token."
+}
+```
+`200 OK`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Change Password
-- **Endpoint:** `POST /api/auth/change-password`
-- **Description:** Change password for a logged-in user.
-- **Request Body:** `oldPassword`, `newPassword`
-- **Responses:** `200 OK`, `400 Bad Request`, `500 Internal Server Error`
+**Endpoint:** `POST /api/auth/change-password`
+**Description:** Change password for a logged-in user.
+**Request Body:**
+```json
+{
+  "oldPassword": "securePassword123",
+  "newPassword": "newSecurePassword456"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Password changed successfully"
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Incorrect current password"
+}
+```
+`200 OK`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Logout
 - **Endpoint:** `POST /api/auth/logout`
@@ -120,10 +284,40 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ## 2. User Management
 
 ### Add User to Organisation
-- **Endpoint:** `POST /api/users/add-user`
-- **Description:** Add a user to the current organisation (admin only). Sends a randomly generated password to the user's email.
-- **Request Body:** `fullname`, `phonenumber`, `email`, `role`
-- **Responses:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Endpoint:** `POST /api/users/add-user`
+**Description:** Add a user to the current organisation (admin only). Sends a randomly generated password to the user's email.
+**Request Body:**
+```json
+{
+  "fullname": "John Smith",
+  "phonenumber": "+1234567890",
+  "email": "john@example.com",
+  "role": "analyst"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "We sent a verification code on john@example.com please check it before it expires",
+  "data": {
+    "user": {
+      "id": "userId",
+      "fullname": "John Smith",
+      "email": "john@example.com",
+      "role": "analyst"
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Email already exists"
+}
+```
+`201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Get All Users in Organisation
 - **Endpoint:** `GET /api/users/all-users`
@@ -135,10 +329,48 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ## 3. Survey & Feedback
 
 ### Create Survey
-- **Endpoint:** `POST /api/surveys`
-- **Description:** Create a new survey for an organisation.
-- **Request Body:** `title`, `description`, `questions`
-- **Responses:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Endpoint:** `POST /api/surveys`
+**Description:** Create a new survey for an organisation.
+**Request Body:**
+```json
+{
+  "title": "Customer Satisfaction Survey",
+  "description": "Monthly feedback survey",
+  "questions": [
+    {
+      "questionText": "How satisfied are you with our service?",
+      "type": "rating"
+    },
+    {
+      "questionText": "What can we improve?",
+      "type": "text"
+    }
+  ]
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Survey created successfully.",
+  "data": {
+    "survey": {
+      "id": "surveyId",
+      "title": "Customer Satisfaction Survey",
+      "description": "Monthly feedback survey",
+      "questions": [ ... ]
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Title, questions, organisation, and createdBy are required."
+}
+```
+`201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Get Surveys
 - **Endpoint:** `GET /api/surveys/:organisationId`
@@ -168,10 +400,40 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 - **Responses:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 ### Submit Feedback
-- **Endpoint:** `POST /api/feedback`
-- **Description:** Submit feedback for a survey.
-- **Request Body:** `surveyId`, `feedbacks`
-- **Responses:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Endpoint:** `POST /api/feedback`
+**Description:** Submit feedback for a survey.
+**Request Body:**
+```json
+{
+  "surveyId": "survey123",
+  "feedbacks": [
+    { "questionId": "q1", "answer": "Very satisfied" },
+    { "questionId": "q2", "answer": "More vegan options" }
+  ]
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Feedback submitted successfully.",
+  "data": {
+    "feedback": {
+      "id": "feedbackId",
+      "survey": "survey123",
+      "feedbacks": [ ... ]
+    }
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Survey ID and feedback are required."
+}
+```
+`201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Get Feedback by Survey
 - **Endpoint:** `GET /api/feedback/:surveyId`

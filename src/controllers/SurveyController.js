@@ -18,10 +18,14 @@ export const createSurvey = async (req, res) => {
 
         });
         await survey.save();
-        res.status(201).json(survey);
+        res.status(201).json({
+          status: "success",
+          message: "Survey created successfully.",
+          data: { survey }
+        });
     } catch (error) {
-        console.error("Error creating survey:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error creating survey:", error);
+        res.status(500).json({ message: "Could not create survey. Please try again later." });
     }
 };
 
@@ -32,7 +36,7 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
         return res.status(400).json({ message: "surveyId and emails are required." });
     }
     try {
-        const survey = await Survey.findOne({ _id:surveyId });
+        const survey = await Survey.findOne({ _id: surveyId });
         if (!survey) {
             return res.status(404).json({ message: "Survey not found." });
         }
@@ -69,16 +73,21 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
   </p>
 </div>
         `;
-        emails.forEach(async(email) => {
-            
-            await sendEmail(email, subject, text);
+        await Promise.all(
+            emails.map(email =>
+                 sendEmail(email, subject, text)
+                )
+            );
+        res.status(200).json({
+          status: "success",
+          message: "Emails sent successfully.",
+          data: { surveyId }
         });
-        res.status(200).json({ message: "Emails sent successfully." });
 
 
     } catch (error) {
-        console.error("Error sending emails with survey link:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error sending emails with survey link:", error);
+        res.status(500).json({ message: "Could not send survey emails. Please try again later." });
     }
 };
 
@@ -94,10 +103,14 @@ export const getSurveysByOrganisation = async (req, res) => {
             .select('-__v')
             .populate('createdBy', 'fullname email') // Populate createdBy with user details
             .sort({ createdAt: -1 });
-        res.status(200).json(surveys);
+        res.status(200).json({
+          status: "success",
+          message: "Surveys fetched successfully.",
+          data: { surveys }
+        });
     } catch (error) {
-        console.error("Error fetching surveys:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error fetching surveys:", error);
+        res.status(500).json({ message: "Could not fetch surveys. Please try again later." });
     }
 };
 
@@ -115,11 +128,15 @@ export const getSurveryByUniqueLinkId = async (req, res) => {
         if (!survey) {
             return res.status(404).json({ message: "Survey not found." });
         }
-        res.status(200).json(survey);
+        res.status(200).json({
+          status: "success",
+          message: "Survey fetched successfully.",
+          data: { survey }
+        });
     }
     catch (error) {
-        console.error("Error fetching survey by unique link ID:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error fetching survey by unique link ID:", error);
+        res.status(500).json({ message: "Could not fetch survey. Please try again later." });
     }
 };
 
@@ -134,10 +151,14 @@ export const deleteSurveyById = async (req, res) => {
         if (!survey) {
             return res.status(404).json({ message: "Survey not found." });
         }
-        res.status(200).json({ message: "Survey deleted successfully." });
+        res.status(200).json({
+          status: "success",
+          message: "Survey deleted successfully.",
+          data: { surveyId }
+        });
     } catch (error) {
-        console.error("Error deleting survey:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error deleting survey:", error);
+        res.status(500).json({ message: "Could not delete survey. Please try again later." });
     }
 };
 
@@ -157,9 +178,13 @@ export const updateSurveyById = async (req, res) => {
         if (!survey) {
             return res.status(404).json({ message: "Survey not found." });
         }
-        res.status(200).json(survey);
+        res.status(200).json({
+          status: "success",
+          message: "Survey updated successfully.",
+          data: { survey }
+        });
     } catch (error) {
-        console.error("Error updating survey:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error updating survey:", error);
+        res.status(500).json({ message: "Could not update survey. Please try again later." });
     }
 };
