@@ -7,7 +7,7 @@ export const sendEmail = async (to, subject, text) => {
 
     const msg = {
         to, // recipient email
-        from: 'mugishawenge1@gmail.com', 
+        from: process.env.SENDGRID_SENDER_EMAIL, // verified sender email', 
         subject, subject,
         text, // plain text body
         html: `<strong>${text}</strong>`, // HTML body
