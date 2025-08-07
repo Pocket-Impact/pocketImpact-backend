@@ -2,21 +2,7 @@
 
 ## Overview
 
-The backend is a Node.js/Express REST API for managing users and organisations, with authentication and role-based access control. It uses MongoDB for data storage.
-
----
-
-
-## Table of Contents
-
-1. **Authentication**
-
-
-# Pocket Impact Backend API Documentation
-
-## Overview
-
-The backend is a Node.js/Express REST API for managing users, organisations, surveys, and feedback, with authentication and role-based access control. It uses MongoDB for data storage.
+Pocket Impact is a Node.js/Express REST API for managing users, organisations, surveys, and feedback, with authentication and role-based access control. It uses MongoDB for data storage.
 
 ---
 
@@ -26,7 +12,7 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 2. **User Management**
 3. **Survey & Feedback**
 4. **Middleware**
-5. **Models**
+5. **Models & Enums**
 6. **Utilities**
 7. **Database Connection**
 
@@ -256,6 +242,7 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ## 2. User Management
 
 
+
 ### Add User to Organisation – `POST /api/users/add-user` – `201 Created`
 **Auth:** Yes (JWT required)
 **Role:** Admin only
@@ -270,7 +257,7 @@ Authorization: Bearer <token>
   "fullname": "John Smith",
   "phonenumber": "+1234567890",
   "email": "john@example.com",
-  "role": "analyst"
+  "role": "analyst" // enum: admin, analyst, researcher
 }
 ```
 **Success Response:**
@@ -314,7 +301,7 @@ Authorization: Bearer <token>
 
 ### Create Survey – `POST /api/surveys` – `201 Created`
 **Auth:** Yes (JWT required)
-**Role:** Admin or Researcher
+**Role:** Admin, Analyst
 **Headers:**
 ```http
 Authorization: Bearer <token>
@@ -328,7 +315,7 @@ Authorization: Bearer <token>
   "questions": [
     {
       "questionText": "How satisfied are you with our service?",
-      "type": "rating"
+      "type": "rating" // enum: rating, text, multiple-choice
     },
     {
       "questionText": "What can we improve?",
@@ -446,14 +433,15 @@ Authorization: Bearer <token>
 
 ---
 
-## 5. Models
+
+## 5. Models & Enums
 
 ### User
 - `fullname` (string, required)
 - `email` (string, required, unique, validated)
-- `phonenumber` (string, required, validated)
+- `phonenumber` (string, required, validated, E.164 format)
 - `organisation` (ObjectId, ref: Organisation, required)
-- `role` (string: 'analyst' | 'researcher' | 'admin', required)
+- `role` (enum: 'admin', 'analyst', 'researcher', required)
 - `password` (string, required, hashed)
 - `isVerified` (boolean, default: false)
 - `otp` (string)
@@ -464,19 +452,37 @@ Authorization: Bearer <token>
 ### Organisation
 - `organisationName` (string, required, unique)
 - `organisationCountry` (string, required)
-- `organisationSize` (string: 'small' | 'medium' | 'large', required)
+- `organisationSize` (enum: 'small', 'medium', 'large', required)
 
 ### Survey
 - `title` (string, required)
 - `description` (string, optional)
-- `questions` (array, required)
+- `questions` (array of objects, required)
+  - `questionText` (string, required)
+  - `type` (enum: 'rating', 'text', 'multiple-choice', required)
 - `uniqueLinkId` (string, required, unique)
 - `organisation` (ObjectId, ref: Organisation, required)
 - `createdBy` (ObjectId, ref: User, required)
 
 ### Feedback
 - `survey` (ObjectId, ref: Survey, required)
-- `feedbacks` (array, required)
+- `feedbacks` (array of objects, required)
+  - `questionId` (ObjectId or string, required)
+  - `answer` (string, required)
+
+### Enums
+- **User Roles:**
+  - `admin`
+  - `analyst`
+  - `researcher`
+- **Organisation Size:**
+  - `small`
+  - `medium`
+  - `large`
+- **Survey Question Types:**
+  - `rating`
+  - `text`
+  - `multiple-choice`
 
 ---
 
