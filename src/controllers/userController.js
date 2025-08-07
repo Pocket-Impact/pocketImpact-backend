@@ -1,5 +1,5 @@
-import { createToken } from "../middlewares/authMiddleware.js";
 import User from "../models/User.js";
+import { generateOtp } from "../utils/generateOTP.js";
 import generatingPassword from "../utils/generatePassword.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
@@ -12,9 +12,6 @@ export const add_user_to_organisation = async (req, res) => {
         if (!fullname || !email || !role|| !phonenumber) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        //hash the generated password
-
-
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
@@ -46,20 +43,28 @@ export const add_user_to_organisation = async (req, res) => {
         const text = `Hello ${fullname},\n\nYour account has been created successfully. Here are your login details:\n\nEmail: ${email}\nPassword: ${generatedPassword}\n\nPlease log in and change your password as soon as possible.\n\nBest regards,\nPocket Impact Team`;
         await sendEmail(email, subject, text);
 
-        res.status(201).json({ message: "User added successfully", user });
+        res.status(201).json({
+          status: "success",
+          message: `We sent a verification code on ${email} please check it before it expires`,
+          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role } }
+        });
     } catch (error) {
-        console.error("Error during adding user:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error during adding user:", error);
+        res.status(500).json({ message: "Could not add user. Please try again later." });
     }
 };
 
 export const get_all_users = async (req, res) => {
     try {
-        const users = await User.find({ organisation: req.user.organisation }).populate('organisation');
-        res.status(200).json(users);
+        const users = await User.find({ organisation: req.user.organisation }).populate('organisation').select('-password -__v');
+        res.status(200).json({
+          status: "success",
+          message: "Users fetched successfully",
+          data: { users }
+        });
     } catch (error) {
-        console.error("Error fetching users:", error.message);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error fetching users:", error);
+        res.status(500).json({ message: "Could not fetch users. Please try again later." });
     }
 };
 
@@ -83,17 +88,58 @@ export const verifyOTP = async (req, res) => {
 
     await user.save();
 
-    res.status(200).json({ message: "Account verified successfully" });
+    res.status(200).json({
+      status: "success",
+      message: "Account verified successfully",
+      data: { user: { id: user._id, email: user.email, isVerified: user.isVerified } }
+    });
   } catch (error) {
-    res.status(500).json({ message: "OTP verification failed", error: error.message });
+    console.error("OTP verification error:", error);
+    res.status(500).json({ message: "OTP verification failed. Please try again later." });
   }
 };
 
 
 
 
+//update user added to the organisation details
+export const updateUser = async (req, res) => {
+    const { id,fullname, email, phonenumber, role } = req.body;
+    try {
+        if (!id || !fullname || !email || !phonenumber || !role) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        if (!phoneRegex.test(phonenumber)) {
+            return res.status(400).json({ message: "Invalid phone number format" });
+        }
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.fullname = fullname;
+        user.email = email;
+        user.phonenumber = phonenumber;
+        user.role = role;
+        await user.save();
+        res.status(200).json({
+          status: "success",
+          message: "User updated successfully",
+          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role } }
+        });
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).json({ message: "Could not update user. Please try again later." });
+    }
+};
 
-export const resendOTP = async (req, res) => {
+
+
+export const  resendOTP = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
@@ -117,9 +163,13 @@ export const resendOTP = async (req, res) => {
       `Your new OTP is: ${otp}. It expires in 10 minutes.`
     );
 
-    res.status(200).json({ message: 'New OTP sent to your email' });
+    res.status(200).json({
+      status: "success",
+      message: "New OTP sent to your email",
+      data: { email: user.email }
+    });
   } catch (error) {
     console.error('Resend OTP error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Could not resend OTP. Please try again later.' });
   }
 };
