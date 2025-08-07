@@ -80,7 +80,8 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
       "id": "userId",
       "fullname": "Jane Doe",
       "email": "jane@example.com",
-      "role": "admin"
+      "role": "admin",
+      "isVerified": true
     }
   }
 }
