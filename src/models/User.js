@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import roles from "../utils/roles.js";
 const userSchema = new mongoose.Schema({
     fullname: {
         type: String,
@@ -39,7 +40,8 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ['analyst', 'researcher', 'admin'],
+          enum: [roles.ADMIN, roles.ANALYST, roles.RESEARCHER],
+
         default: 'user',
     },
     password: {

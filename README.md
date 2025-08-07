@@ -136,4 +136,5 @@ This backend is designed to connect to a frontend client (e.g. Next.js) running 
 - All request bodies are validated using Joi schemas (see `src/schemas/`).
 - All responses are standardized for frontend consumption.
 - Make sure your environment variable names match those expected in your code (e.g. `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`).
+ - Automated tests are provided for controllers and validation schemas. See the `src/tests/` directory for details. DB-dependent tests are skipped to avoid timeouts in CI/local environments.
 - Run tests with `npm run test` (see `src/tests/`).

@@ -11,6 +11,7 @@ The backend is a Node.js/Express REST API for managing users and organisations, 
 
 1. **Authentication**
 
+
 # Pocket Impact Backend API Documentation
 
 ## Overview
@@ -22,49 +23,20 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ## Table of Contents
 
 1. **Authentication**
-   - Signup (`POST /api/auth/signup`)
-   - Login (`POST /api/auth/login`)
-   - Refresh Token (`POST /api/auth/refresh-token`)
-   - Verify OTP (`POST /api/auth/verify-otp`)
-   - Resend OTP (`GET /api/auth/resend-otp`)
-   - Forgot Password (`POST /api/auth/forgot-password`)
-   - Reset Password (`POST /api/auth/reset-password`)
-   - Change Password (`POST /api/auth/change-password`)
-   - Logout (`POST /api/auth/logout`)
 2. **User Management**
-   - Add User to Organisation (`POST /api/users/add-user`)
-   - Get All Users in Organisation (`GET /api/users/all-users`)
 3. **Survey & Feedback**
-   - Create Survey (`POST /api/surveys`)
-   - Get Surveys (`GET /api/surveys/:organisationId`)
-   - Update Survey (`PUT /api/surveys/:surveyId`)
-   - Delete Survey (`DELETE /api/surveys/:surveyId`)
-   - Send Survey Link (`POST /api/surveys/send-survey-link`)
-   - Get Survey by Unique Link (`GET /api/surveys/unique/:uniqueLinkId`)
-   - Submit Feedback (`POST /api/feedback`)
-   - Get Feedback by Survey (`GET /api/feedback/:surveyId`)
 4. **Middleware**
-   - Authentication (`protect`)
-   - Role Restriction (`restrictTo`)
-   - Verified User (`requireVerifiedUser`)
 5. **Models**
-   - User
-   - Organisation
-   - Survey
-   - Feedback
 6. **Utilities**
-   - generateOtp
-   - sendEmail
-   - generatePassword
-   - generateTokens
 7. **Database Connection**
 
 ---
 
 ## 1. Authentication
 
-### Signup
-**Endpoint:** `POST /api/auth/signup`
+
+### Signup – `POST /api/auth/signup` – `201 Created`
+**Auth:** No
 **Description:** Register a new organisation and admin user. Sends an OTP to the provided email for verification.
 **Request Body:**
 ```json
@@ -102,8 +74,8 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ```
 `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
-### Login
-**Endpoint:** `POST /api/auth/login`
+### Login – `POST /api/auth/login` – `200 OK`
+**Auth:** No
 **Description:** Login with email and password. Returns access and refresh tokens.
 **Request Body:**
 ```json
@@ -283,9 +255,15 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 
 ## 2. User Management
 
-### Add User to Organisation
-**Endpoint:** `POST /api/users/add-user`
-**Description:** Add a user to the current organisation (admin only). Sends a randomly generated password to the user's email.
+
+### Add User to Organisation – `POST /api/users/add-user` – `201 Created`
+**Auth:** Yes (JWT required)
+**Role:** Admin only
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+**Description:** Add a user to the current organisation. Sends a randomly generated password to the user's email.
 **Request Body:**
 ```json
 {
@@ -299,7 +277,7 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ```json
 {
   "status": "success",
-  "message": "We sent a verification code on john@example.com please check it before it expires",
+  "message": "A verification code was sent to john@example.com. Please check your inbox before it expires.",
   "data": {
     "user": {
       "id": "userId",
@@ -319,17 +297,28 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 ```
 `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
-### Get All Users in Organisation
-- **Endpoint:** `GET /api/users/all-users`
-- **Description:** Get all users in the current organisation (admin only).
-- **Responses:** `200 OK`, `500 Internal Server Error`
+### Get All Users in Organisation – `GET /api/users/all-users` – `200 OK`
+**Auth:** Yes (JWT required)
+**Role:** Admin only
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+**Description:** Get all users in the current organisation.
+**Responses:** `200 OK`, `500 Internal Server Error`
 
 ---
 
 ## 3. Survey & Feedback
 
-### Create Survey
-**Endpoint:** `POST /api/surveys`
+
+### Create Survey – `POST /api/surveys` – `201 Created`
+**Auth:** Yes (JWT required)
+**Role:** Admin or Researcher
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
 **Description:** Create a new survey for an organisation.
 **Request Body:**
 ```json
@@ -442,10 +431,17 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 
 ---
 
+
 ## 4. Middleware
 
 - **protect:** Checks for JWT in cookies, verifies token, attaches user info to `req.user`.
 - **restrictTo(...roles):** Restricts access to users with specified roles.
+
+  **Example:**
+  ```js
+  router.get('/admin-data', protect, restrictTo('admin'), controller);
+  ```
+
 - **requireVerifiedUser:** Ensures the user is verified before allowing access to certain routes.
 
 ---
@@ -484,6 +480,7 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 
 ---
 
+
 ## 6. Utilities
 
 - **generateOtp:** Generates a 6-digit OTP and expiration time (10 minutes from now).
@@ -500,12 +497,3 @@ The backend is a Node.js/Express REST API for managing users, organisations, sur
 
 ---
 
-- Generates access and refresh JWT tokens for authentication.
-
----
-## 7. Database Connection
-
-- MongoDB connection via Mongoose.
-- URI from `MONGO_URI` env variable or defaults to `mongodb://localhost:27017/pocket-impact`.
-
---
