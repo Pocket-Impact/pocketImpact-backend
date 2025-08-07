@@ -99,7 +99,28 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
-
+//delete user added to the organisation
+export const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        if (!id) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        await User.findByIdAndDelete(id);
+        res.status(200).json({
+          status: "success",
+          message: "User deleted successfully",
+          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role } }
+        });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: "Could not delete user. Please try again later." });
+    }
+};
 
 
 //update user added to the organisation details

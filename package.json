@@ -34,7 +34,8 @@
     "jest": "^30.0.5",
     "joi": "^18.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.17.0"
+    "mongoose": "^8.17.0",
+    "sentiment": "^5.0.2"
   },
   "devDependencies": {
     "eslint": "^9.32.0",

@@ -1,4 +1,4 @@
-import { createSurvey, sendEmailsWithSurveyLink, getSurveysByOrganisation } from '../controllers/surveyController.js';
+import { createSurvey, sendEmailsWithSurveyLink, getSurveysByOrganisation } from '../controllers/SurveyController.js';
 import httpMocks from 'node-mocks-http';
 
 describe('SurveyController', () => {

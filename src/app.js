@@ -4,9 +4,17 @@ import userRoutes from './routes/userRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import surverRoutes from './routes/surveyRoutes.js';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
 const app = express();
+
+// Middleware to enable CORS
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true, // Allow cookies to be sent with requests
+}));
+
 
 // Middleware to parse JSON requests
 app.use(express.json());
