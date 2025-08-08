@@ -233,10 +233,40 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 ```
 `200 OK`, `400 Bad Request`, `500 Internal Server Error`
 
+
+### Check Authenticated User – `GET /api/auth/check` – `200 OK`
+**Auth:** Yes (JWT required)
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+**Description:** Returns the currently authenticated user's info if the access token is valid.
+**Success Response:**
+```json
+{
+  "status": "success",
+  "user": {
+    "id": "userId",
+    "role": "admin",
+    "organisation": "organisationId"
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Unauthorized access"
+}
+```
+`200 OK`, `401 Unauthorized`
+
 ### Logout
-- **Endpoint:** `POST /api/auth/logout`
+- **Endpoint:** `GET /api/auth/logout`
 - **Description:** Log out the current user (clears JWT cookies).
 - **Responses:** `200 OK`
+
+add here the check route
 
 ---
 

@@ -248,6 +248,13 @@ export const resetPassword = async (req, res) => {
     }
 };
 
+export const check = (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    user: req.user
+  });
+}
+
 export const logout = (req, res) => {
   res.clearCookie('accessToken');
   res.clearCookie('refreshToken');

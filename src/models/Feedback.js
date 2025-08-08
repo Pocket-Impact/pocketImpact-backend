@@ -11,6 +11,7 @@ const answerSchema = new mongoose.Schema({
 });
 
 const feedbackSchema = new mongoose.Schema({
+    
     survey: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Survey',
@@ -30,5 +31,4 @@ const feedbackSchema = new mongoose.Schema({
 });
 
 const Feedback = mongoose.model('Feedback', feedbackSchema);
-
 export default Feedback;
