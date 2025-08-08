@@ -120,7 +120,8 @@ export const login = async (req, res) => {
         res.status(200).json({
           status: "success",
           message: "Login successful",
-          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role,isVerified:user.isVerified } }
+          //include
+          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role,isVerified:user.isVerified, organisationName:user.organisationName } }
         });
     } catch (error) {
         console.error("Error during login:", error.message);
