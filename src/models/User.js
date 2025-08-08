@@ -76,14 +76,21 @@ userSchema.statics.login = async function (email, password) {
     const user = await this.findOne({ email });
     if (user) {
         const isMatch = await bcrypt.compare(password, user.password);
+        //fetch for users organisation details
+
         if (isMatch) {
+
+            const organisation = await mongoose.model('Organisation').findById(user.organisation).select('organisationName organisationCountry organisationSize');
+
+
             return {
                 _id: user._id,
                 fullname: user.fullname,
                 email: user.email,
-                organisationName: user.organisationName,
-                organisationCountry: user.organisationCountry,
-                organisationSize: user.organisationSize,
+                isVerified: user.isVerified,
+                role: user.role,
+                phonenumber: user.phonenumber,
+                organisationName: organisation.organisationName,
             };
         }
         throw new Error('Incorrect email or password!');

@@ -75,9 +75,9 @@ export const create_new_account = async (req, res) => {
         const text = `Your OTP is ${otp}. It is valid for 10 minutes.`;
         await sendEmail(email, subject, text);
         res.status(201).json({
-          status: "success",
-          message: ["User created successfully", "Please check your email for the OTP to verify your account"],
-          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role } }
+            status: "success",
+            message: ["User created successfully", "Please check your email for the OTP to verify your account"],
+            data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role } }
         });
 
     } catch (error) {
@@ -118,9 +118,19 @@ export const login = async (req, res) => {
         });
 
         res.status(200).json({
-          status: "success",
-          message: "Login successful",
-          data: { user: { id: user._id, fullname: user.fullname, email: user.email, role: user.role,isVerified:user.isVerified } }
+            status: "success",
+            message: "Login successfuly",
+            //include
+            data: {
+                user: {
+                    id: user._id,
+                    fullname: user.fullname,
+                    email: user.email,
+                    role: user.role,
+                    isVerified: user.isVerified,
+                    organisationName: user.organisationName
+                }
+            }
         });
     } catch (error) {
         console.error("Error during login:", error.message);
@@ -145,14 +155,14 @@ export const refresh = (req, res) => {
 
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production'   ,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             maxAge: 15 * 60 * 1000 // 15 min
         });
 
         return res.status(200).json({
-          status: "success",
-          message: "Token refreshed"
+            status: "success",
+            message: "Token refreshed"
         });
     });
 };
@@ -174,8 +184,8 @@ export const changePassword = async (req, res) => {
         user.password = newPassword;
         await user.save();
         res.status(200).json({
-          status: "success",
-          message: "Password changed successfully"
+            status: "success",
+            message: "Password changed successfully"
         });
     } catch (error) {
         console.error("Change password error:", error);
@@ -210,8 +220,8 @@ export const forgotPassword = async (req, res) => {
         await sendEmail(user.email, 'Password Reset', message);
 
         res.status(200).json({
-          status: "success",
-          message: "Password reset link sent to your email."
+            status: "success",
+            message: "Password reset link sent to your email."
         });
     } catch (err) {
         console.error('Forgot password error:', err);
@@ -239,8 +249,8 @@ export const resetPassword = async (req, res) => {
         await user.save();
 
         res.status(200).json({
-          status: "success",
-          message: "Password has been reset successfully."
+            status: "success",
+            message: "Password has been reset successfully."
         });
     } catch (err) {
         console.error('Reset password error:', err);
@@ -248,11 +258,18 @@ export const resetPassword = async (req, res) => {
     }
 };
 
+export const check = (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        user: req.user
+    });
+}
+
 export const logout = (req, res) => {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
-  res.status(200).json({
-    status: "success",
-    message: "Logout successful"
-  });
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.status(200).json({
+        status: "success",
+        message: "Logout successful"
+    });
 };

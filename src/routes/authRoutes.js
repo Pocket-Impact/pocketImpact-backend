@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create_new_account, forgotPassword, login, logout, refresh, resetPassword} from "../controllers/authController.js";
+import { check, create_new_account, forgotPassword, login, logout, refresh, resetPassword} from "../controllers/authController.js";
 import Joi from "joi";
 import { validate } from "../middlewares/validate.js";
 import { forgotPasswordSchema, loginSchema, refreshTokenSchema, resetPasswordSchema, signupSchema } from "../schemas/authSchemas.js";
@@ -15,6 +15,7 @@ router.post('/signup',validate(signupSchema), create_new_account);
 router.post('/login',validate(loginSchema), login);
 router.get('/logout',logout);
 router.post('/refresh-token',validate(refreshTokenSchema),  refresh);
+router.get('/check', protect, check);
 
 // Password reset routes
 router.post('/forgot-password', validate(forgotPasswordSchema), forgotPassword);
