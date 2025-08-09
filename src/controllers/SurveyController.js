@@ -15,7 +15,6 @@ export const createSurvey = async (req, res) => {
             questions,
             organisation: req.user.organisation, // Use organisation from authenticated user
             createdBy: req.user.id,
-
         });
         await survey.save();
         res.status(201).json({

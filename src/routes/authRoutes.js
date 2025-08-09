@@ -2,7 +2,7 @@ import { Router } from "express";
 import { check, create_new_account, forgotPassword, login, logout, refresh, resetPassword} from "../controllers/authController.js";
 import Joi from "joi";
 import { validate } from "../middlewares/validate.js";
-import { forgotPasswordSchema, loginSchema, refreshTokenSchema, resetPasswordSchema, signupSchema } from "../schemas/authSchemas.js";
+import { forgotPasswordSchema, loginSchema, resetPasswordSchema, signupSchema } from "../schemas/authSchemas.js";
 import { resendOTP, verifyOTP } from "../controllers/userController.js";
 import { resendOTPSchema, verifyOTPSchema } from "../schemas/userSchemas.js";
 import { protect } from "../middlewares/authMiddleware.js";
