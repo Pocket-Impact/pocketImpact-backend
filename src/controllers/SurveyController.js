@@ -3,7 +3,7 @@ import { sendEmail } from '../utils/sendEmail.js';
 
 // Controller to create a new survey
 export const createSurvey = async (req, res) => {
-    const { title, description, questions, organisation, createdBy } = req.body;
+    const { title, description, questions, createdBy } = req.body;
 
     if (!title || !questions || Array.isArray(questions) && questions.length === 0) {
         return res.status(400).json({ message: "Title, questions, organisation, and createdBy are required." });
@@ -93,7 +93,7 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
 
 // Controller to get all surveys for an organisation
 export const getSurveysByOrganisation = async (req, res) => {
-    const { organisationId } = req.params;
+    const organisationId  = req.user.organisation;
     if (!organisationId) {
         return res.status(400).json({ message: "Organisation ID is required." });
     }
