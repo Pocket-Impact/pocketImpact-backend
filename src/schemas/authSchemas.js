@@ -25,6 +25,4 @@ export const resetPasswordSchema = Joi.object({
   newPassword: Joi.string().min(6).required()
 });
 
-export const refreshTokenSchema = Joi.object({
-  refreshToken: Joi.string().required()
-});
+

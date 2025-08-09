@@ -14,7 +14,7 @@ const router = Router();
 router.post('/signup',validate(signupSchema), create_new_account);
 router.post('/login',validate(loginSchema), login);
 router.get('/logout',logout);
-router.post('/refresh-token',validate(refreshTokenSchema),  refresh);
+router.post('/refresh-token',  refresh);
 router.get('/check', protect, check);
 
 // Password reset routes
