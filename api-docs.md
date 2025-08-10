@@ -95,11 +95,31 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 ```
 `200 OK`, `400 Bad Request`
 
-### Refresh Token
-- **Endpoint:** `POST /api/auth/refresh-token`
-- **Description:** Use a valid refresh token to obtain a new access token.
-- **Request Body:** `refreshToken` (cookie or body)
-- **Responses:** `200 OK`, `401 Unauthorized`
+
+### Refresh Token – `POST /api/auth/refresh-token` – `200 OK`
+**Auth:** No (requires valid refresh token)
+**Description:** Use a valid refresh token (from cookie or request body) to obtain a new access token.
+**Request Body:**
+```json
+{
+  "refreshToken": "..." // optional, can also be sent as a cookie
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "accessToken": "..."
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Invalid or expired refresh token."
+}
+```
+`200 OK`, `401 Unauthorized`
 
 ### Verify OTP
 **Endpoint:** `POST /api/auth/verify-otp`
@@ -337,7 +357,7 @@ Authorization: Bearer <token>
 ```http
 Authorization: Bearer <token>
 ```
-**Description:** Create a new survey for an organisation.
+**Description:** Create a new survey for the authenticated user's organisation. The organisation is automatically set from the user's session; you do not need to provide it in the request body.
 **Request Body:**
 ```json
 {
