@@ -11,7 +11,7 @@ const router = Router();
 // Route to create a new survey
 router.post('/', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALYST),validate(surveySchema), createSurvey);
 // Route to get all surveys for an organisation
-router.get('/:organisationId', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALYST,roles.RESEARCHER), getSurveysByOrganisation);
+router.get('/', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALYST,roles.RESEARCHER), getSurveysByOrganisation);
 
 // Route to send survey link via email
 router.post('/send-survey-link', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALYST),validate(sendSurveyByUniqueLinkSchema), sendEmailsWithSurveyLink);
