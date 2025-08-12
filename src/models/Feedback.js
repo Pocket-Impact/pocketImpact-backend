@@ -12,7 +12,7 @@ const answerSchema = new mongoose.Schema({
 
 const feedbackSchema = new mongoose.Schema({
     
-    survey: {
+    surveyId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Survey',
         required: true,
