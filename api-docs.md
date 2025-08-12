@@ -95,11 +95,31 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 ```
 `200 OK`, `400 Bad Request`
 
-### Refresh Token
-- **Endpoint:** `POST /api/auth/refresh-token`
-- **Description:** Use a valid refresh token to obtain a new access token.
-- **Request Body:** `refreshToken` (cookie or body)
-- **Responses:** `200 OK`, `401 Unauthorized`
+
+### Refresh Token – `POST /api/auth/refresh-token` – `200 OK`
+**Auth:** No (requires valid refresh token)
+**Description:** Use a valid refresh token (from cookie or request body) to obtain a new access token.
+**Request Body:**
+```json
+{
+  "refreshToken": "..." // optional, can also be sent as a cookie
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "accessToken": "..."
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Invalid or expired refresh token."
+}
+```
+`200 OK`, `401 Unauthorized`
 
 ### Verify OTP
 **Endpoint:** `POST /api/auth/verify-otp`
@@ -337,7 +357,7 @@ Authorization: Bearer <token>
 ```http
 Authorization: Bearer <token>
 ```
-**Description:** Create a new survey for an organisation.
+**Description:** Create a new survey for the authenticated user's organisation. The organisation is automatically set from the user's session; you do not need to provide it in the request body.
 **Request Body:**
 ```json
 {
@@ -406,9 +426,9 @@ Authorization: Bearer <token>
 - **Description:** Get a survey by its unique link ID.
 - **Responses:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
-### Submit Feedback
-**Endpoint:** `POST /api/feedback`
-**Description:** Submit feedback for a survey.
+
+### Submit Feedback – `POST /api/feedback` – `201 Created`
+**Description:** Submit feedback for a survey. Each answer is analyzed for sentiment (positive, negative, neutral) and the result is stored with the feedback.
 **Request Body:**
 ```json
 {
@@ -428,7 +448,18 @@ Authorization: Bearer <token>
     "feedback": {
       "id": "feedbackId",
       "survey": "survey123",
-      "feedbacks": [ ... ]
+      "feedbacks": [
+        {
+          "questionId": "q1",
+          "answer": "Very satisfied",
+          "sentiment": "positive"
+        },
+        {
+          "questionId": "q2",
+          "answer": "More vegan options",
+          "sentiment": "neutral"
+        }
+      ]
     }
   }
 }
@@ -442,10 +473,41 @@ Authorization: Bearer <token>
 ```
 `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
-### Get Feedback by Survey
-- **Endpoint:** `GET /api/feedback/:surveyId`
-- **Description:** Get all feedback for a specific survey.
-- **Responses:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
+
+### Get Feedback by Survey – `GET /api/feedback/:surveyId` – `200 OK`
+**Description:** Get all feedback for a specific survey, including sentiment analysis for each answer and question details.
+**Success Response:**
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "_id": "feedbackId",
+      "surveyId": "survey123",
+      "feedbacks": [
+        {
+          "questionId": "q1",
+          "answer": "Very satisfied",
+          "sentiment": "positive",
+          "questionText": "How satisfied are you with our service?",
+          "options": []
+        },
+        // ...
+      ],
+      "createdAt": "2025-08-12T14:09:07.000Z",
+      "updatedAt": "2025-08-12T14:09:07.000Z"
+    }
+  ]
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "No feedback found for this survey."
+}
+```
+`200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 ---
 
@@ -495,11 +557,13 @@ Authorization: Bearer <token>
 - `organisation` (ObjectId, ref: Organisation, required)
 - `createdBy` (ObjectId, ref: User, required)
 
+
 ### Feedback
 - `survey` (ObjectId, ref: Survey, required)
 - `feedbacks` (array of objects, required)
   - `questionId` (ObjectId or string, required)
   - `answer` (string, required)
+  - `sentiment` (string, enum: 'positive', 'negative', 'neutral', default: 'neutral')
 
 ### Enums
 - **User Roles:**

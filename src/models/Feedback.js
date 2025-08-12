@@ -8,11 +8,17 @@ const answerSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Mixed, // text, number, or option
         required: true,
     },
+    // add filed of sentiment analysis if needed
+    sentiment: {
+        type: String,
+        enum: ['positive', 'negative', 'neutral'],
+        default: 'neutral',
+    },
 });
 
 const feedbackSchema = new mongoose.Schema({
     
-    survey: {
+    surveyId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Survey',
         required: true,

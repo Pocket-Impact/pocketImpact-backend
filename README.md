@@ -80,6 +80,7 @@ The server will start at [http://localhost:5000](http://localhost:5000).
 
 
 
+
 You can use tools like [Postman](https://www.postman.com/) or [Thunder Client](https://www.thunderclient.com/) to test API routes. All successful responses use:
 
 ```json
@@ -97,6 +98,36 @@ All error responses use:
 }
 ```
 
+#### Sentiment Analysis in Feedback
+
+When submitting feedback via `POST /api/feedback`, each answer is automatically analyzed for sentiment (positive, negative, neutral) and the result is included in the response and stored in the database.
+
+Example feedback response:
+```json
+{
+  "status": "success",
+  "message": "Feedback submitted successfully.",
+  "data": {
+    "feedback": {
+      "id": "feedbackId",
+      "survey": "survey123",
+      "feedbacks": [
+        {
+          "questionId": "q1",
+          "answer": "Very satisfied",
+          "sentiment": "positive"
+        },
+        {
+          "questionId": "q2",
+          "answer": "More vegan options",
+          "sentiment": "neutral"
+        }
+      ]
+    }
+  }
+}
+```
+
 ### Example API Routes
 
 - `POST /api/auth/signup` (see api-docs for example body)
@@ -106,11 +137,11 @@ All error responses use:
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
 - `POST /api/auth/change-password`
-- `POST /api/auth/logout`
+- `GET /api/auth/logout`
 - `POST /api/auth/refresh-token` *(get new access token using refresh token)*
 - `POST /api/users/add-user`
 - `POST /api/surveys` *(create survey)*
-- `POST /api/feedback` *(submit feedback)*
+- `POST /api/feedback` *(submit feedback, includes sentiment)*
 
 ---
 
