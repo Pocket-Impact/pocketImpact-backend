@@ -7,7 +7,7 @@ export const createSurvey = async (req, res) => {
 
     if (!title || !questions || Array.isArray(questions) && questions.length === 0) {
         return res.status(400).json({ message: "Title, questions, organisation, and createdBy are required." });
-    }
+    }    
     try {
         const survey = new Survey({
             title,
@@ -92,7 +92,6 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
 
 // Controller to get all surveys for an organisation
 export const getSurveysByOrganisation = async (req, res) => {
-    console.log(req.user);
     
     const organisationId  = req.user.organisation;
     if (!organisationId) {

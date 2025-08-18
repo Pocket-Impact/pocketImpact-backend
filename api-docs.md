@@ -2,7 +2,7 @@
 
 ## Overview
 
-Pocket Impact is a Node.js/Express REST API for managing users, organisations, surveys, and feedback, with authentication and role-based access control. It uses MongoDB for data storage.
+Pocket Impact is a Node.js/Express REST API for managing users, organisations, surveys, and responses, with authentication and role-based access control. It uses MongoDB for data storage.
 
 ---
 
@@ -10,7 +10,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 
 1. **Authentication**
 2. **User Management**
-3. **Survey & Feedback**
+3. **Survey & Response**
 4. **Middleware**
 5. **Models & Enums**
 6. **Utilities**
@@ -362,7 +362,7 @@ Authorization: Bearer <token>
 ```json
 {
   "title": "Customer Satisfaction Survey",
-  "description": "Monthly feedback survey",
+  "description": "Monthly response survey",
   "questions": [
     {
       "questionText": "How satisfied are you with our service?",
@@ -384,7 +384,7 @@ Authorization: Bearer <token>
     "survey": {
       "id": "surveyId",
       "title": "Customer Satisfaction Survey",
-      "description": "Monthly feedback survey",
+      "description": "Monthly response survey",
       "questions": [ ... ]
     }
   }
@@ -427,13 +427,13 @@ Authorization: Bearer <token>
 - **Responses:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 
-### Submit Feedback – `POST /api/feedback` – `201 Created`
-**Description:** Submit feedback for a survey. Each answer is analyzed for sentiment (positive, negative, neutral) and the result is stored with the feedback.
+### Submit Response – `POST /api/responses` – `201 Created`
+**Description:** Submit responses for a survey. Each answer is analyzed for sentiment (positive, negative, neutral) and the result is stored with the response.
 **Request Body:**
 ```json
 {
   "surveyId": "survey123",
-  "feedbacks": [
+  "responses": [
     { "questionId": "q1", "answer": "Very satisfied" },
     { "questionId": "q2", "answer": "More vegan options" }
   ]
@@ -443,12 +443,12 @@ Authorization: Bearer <token>
 ```json
 {
   "status": "success",
-  "message": "Feedback submitted successfully.",
+  "message": "Response submitted successfully.",
   "data": {
-    "feedback": {
-      "id": "feedbackId",
+    "response": {
+      "id": "responseId",
       "survey": "survey123",
-      "feedbacks": [
+      "responses": [
         {
           "questionId": "q1",
           "answer": "Very satisfied",
@@ -468,23 +468,23 @@ Authorization: Bearer <token>
 ```json
 {
   "status": "fail",
-  "message": "Survey ID and feedback are required."
+  "message": "Survey ID and responses are required."
 }
 ```
 `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 
-### Get Feedback by Survey – `GET /api/feedback/:surveyId` – `200 OK`
-**Description:** Get all feedback for a specific survey, including sentiment analysis for each answer and question details.
+### Get Responses by Survey – `GET /api/responses/:surveyId` – `200 OK`
+**Description:** Get all responses for a specific survey, including sentiment analysis for each answer and question details.
 **Success Response:**
 ```json
 {
   "status": "success",
   "data": [
     {
-      "_id": "feedbackId",
+      "_id": "responseId",
       "surveyId": "survey123",
-      "feedbacks": [
+      "responses": [
         {
           "questionId": "q1",
           "answer": "Very satisfied",
@@ -504,7 +504,7 @@ Authorization: Bearer <token>
 ```json
 {
   "status": "fail",
-  "message": "No feedback found for this survey."
+  "message": "No responses found for this survey."
 }
 ```
 `200 OK`, `404 Not Found`, `500 Internal Server Error`
@@ -558,9 +558,9 @@ Authorization: Bearer <token>
 - `createdBy` (ObjectId, ref: User, required)
 
 
-### Feedback
+### Response
 - `survey` (ObjectId, ref: Survey, required)
-- `feedbacks` (array of objects, required)
+- `responses` (array of objects, required)
   - `questionId` (ObjectId or string, required)
   - `answer` (string, required)
   - `sentiment` (string, enum: 'positive', 'negative', 'neutral', default: 'neutral')

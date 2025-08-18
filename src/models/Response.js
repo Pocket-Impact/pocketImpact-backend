@@ -12,7 +12,7 @@ const answerSchema = new mongoose.Schema({
     sentiment: {
         type: String,
         enum: ['positive', 'negative', 'neutral'],
-        default: 'neutral',
+        default: null, // null means not yet analyzed
     },
 });
 

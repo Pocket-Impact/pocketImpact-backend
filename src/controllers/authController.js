@@ -61,7 +61,7 @@ export const create_new_account = async (req, res) => {
             fullname,
             email,
             phonenumber,
-            organisation: organisation._id,
+            organisationId: organisation._id,
             role: 'admin',
             password,
             isVerified: false,
@@ -93,10 +93,8 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Email and password are required" });
         }
         const user = await User.login(email, password);
-        // check if user is verified
-        // if (!user.isVerified) {
-        //     return res.status(403).json({ message: "Please verify your email to continue. through a verification link we gave you" });
-        // }
+        console.log(user);
+
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password!" });
         }
@@ -117,6 +115,8 @@ export const login = async (req, res) => {
             sameSite: 'Strict',
         });
 
+        
+        
         res.status(200).json({
             status: "success",
             message: "Login successfuly",
@@ -128,7 +128,8 @@ export const login = async (req, res) => {
                     email: user.email,
                     role: user.role,
                     isVerified: user.isVerified,
-                    organisationName: user.organisationName
+                    organisationName: user.organisationName,
+                    organisationId: user.organisationId
                 }
             }
         });

@@ -17,7 +17,7 @@ export const submitResponse = async (req, res) => {
         responses.forEach(answer => {
             if (typeof answer.answer === 'string') {
                 const sentimentResult = analyzeAnswerSentiment(answer.answer);
-                answer.sentiment = sentimentResult.sentiment; // Add sentiment to the answer
+                answer.sentiment = sentimentResult.sentiment; // Add sentiment to the answerr
             }
 
         });
@@ -28,7 +28,6 @@ export const submitResponse = async (req, res) => {
         }
         const organisationId = survey.organisationId;
         
-        console.log(organisationId);
         
         const newResponse = new Response({
             organisationId, 
