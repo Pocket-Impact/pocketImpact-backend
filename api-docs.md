@@ -10,7 +10,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 
 1. **Authentication**
 2. **User Management**
-3. **Survey & Response**
+3. **Survey, Response & Feedback**
 4. **Middleware**
 5. **Models & Enums**
 6. **Utilities**
@@ -347,7 +347,95 @@ Authorization: Bearer <token>
 
 ---
 
-## 3. Survey & Feedback
+## 3. Survey, Response & Feedback
+# Feedback Endpoints
+
+### Submit Feedback – `POST /api/feedbacks` – `201 Created`
+**Description:** Submit general feedback for an organisation (not tied to a survey). Feedback can be categorized and optionally analyzed for sentiment.
+**Request Body:**
+```json
+{
+  "organisationId": "org123",
+  "message": "Great product, but could be faster!",
+  "category": "performance"
+}
+```
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Feedback submitted successfully.",
+  "data": {
+    "_id": "feedbackId",
+    "organisationId": "org123",
+    "message": "Great product, but could be faster!",
+    "category": "performance",
+    "sentiment": "neutral",
+    "createdAt": "2025-08-18T19:32:36.000Z"
+  }
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Organisation and message are required."
+}
+```
+`201 Created`, `400 Bad Request`, `500 Internal Server Error`
+
+### Get Feedback by Organisation – `GET /api/feedbacks/:organisationId` – `200 OK`
+**Description:** Get all feedback for a specific organisation.
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Feedback fetched successfully.",
+  "data": [
+    {
+      "_id": "feedbackId",
+      "organisationId": "org123",
+      "message": "Great product, but could be faster!",
+      "category": "performance",
+      "sentiment": "neutral",
+      "createdAt": "2025-08-18T19:32:36.000Z"
+    }
+    // ...
+  ]
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "No feedback found for this organisation."
+}
+```
+`200 OK`, `404 Not Found`, `500 Internal Server Error`
+
+### Delete Feedback – `DELETE /api/feedbacks/:id` – `200 OK`
+**Description:** Delete a feedback entry by its ID.
+**Success Response:**
+```json
+{
+  "status": "success",
+  "message": "Feedback deleted successfully."
+}
+```
+**Error Response:**
+```json
+{
+  "status": "fail",
+  "message": "Feedback not found."
+}
+```
+`200 OK`, `404 Not Found`, `500 Internal Server Error`
+# Feedback
+- `organisationId` (ObjectId, ref: Organisation, required)
+- `message` (string, required)
+- `category` (string, enum: 'product', 'ux', 'support', 'pricing', 'features', 'performance', 'other', default: 'other')
+- `sentiment` (string, enum: 'positive', 'negative', 'neutral', default: null)
+- `createdAt` (Date)
 
 
 ### Create Survey – `POST /api/surveys` – `201 Created`
