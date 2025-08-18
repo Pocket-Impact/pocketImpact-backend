@@ -13,7 +13,7 @@ export const createSurvey = async (req, res) => {
             title,
             description,
             questions,
-            organisation: req.user.organisation, // Use organisation from authenticated user
+            organisationId: req.user.organisationId, // Use organisation from authenticated user
             createdBy: req.user.id,
         });
         await survey.save();
@@ -41,7 +41,7 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
         }
         //-----------------------------------------
         const surveyLink = `${process.env.FRONTEND_URL || "http://localhost:3000/api"}/surveys/unique/${survey.uniqueLinkId}`;
-        const subject = "We'd love your feedback! Please complete this survey";
+    const subject = "We'd love your response! Please complete this survey";
         const text = `
         
             <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
@@ -92,13 +92,15 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
 
 // Controller to get all surveys for an organisation
 export const getSurveysByOrganisation = async (req, res) => {
+    console.log(req.user);
+    
     const organisationId  = req.user.organisation;
     if (!organisationId) {
         return res.status(400).json({ message: "Organisation ID is required." });
     }
     try {
         const surveys = await Survey
-            .find({ organisation: organisationId })
+            .find({ organisationId: organisationId })
             .select('-__v')
             .populate('createdBy', 'fullname email') // Populate createdBy with user details
             .sort({ createdAt: -1 });
@@ -123,7 +125,7 @@ export const getSurveryByUniqueLinkId = async (req, res) => {
             .findOne({ uniqueLinkId })
             .select('-__v')
             .populate('createdBy', 'fullname email') // Populate createdBy with user details
-            .populate('organisation', 'organisationName organisationCountry organisationSize');
+            .populate('organisationId', 'organisationName organisationCountry organisationSize');
         if (!survey) {
             return res.status(404).json({ message: "Survey not found." });
         }

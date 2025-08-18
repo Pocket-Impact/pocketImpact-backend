@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+
 const answerSchema = new mongoose.Schema({
     questionId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -8,7 +9,6 @@ const answerSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.Mixed, // text, number, or option
         required: true,
     },
-    // add filed of sentiment analysis if needed
     sentiment: {
         type: String,
         enum: ['positive', 'negative', 'neutral'],
@@ -16,25 +16,29 @@ const answerSchema = new mongoose.Schema({
     },
 });
 
-const feedbackSchema = new mongoose.Schema({
-    
+const responseSchema = new mongoose.Schema({
+    organisationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organisation',
+        required: true,
+    },
     surveyId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Survey',
         required: true,
     },
-    feedbacks: {
+    responses: {
         type: [answerSchema],
         validate: {
             validator: function (v) {
                 return v.length > 0;
             },
-            message: 'At least one feedback is required',
+            message: 'At least one response is required',
         },
     },
 }, {
-    timestamps: true, // gives you createdAt, updatedAt
+    timestamps: true,
 });
 
-const Feedback = mongoose.model('Feedback', feedbackSchema);
-export default Feedback;
+const Response = mongoose.model('Response', responseSchema);
+export default Response;

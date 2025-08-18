@@ -2,7 +2,7 @@ import { Router } from "express";
 import { protect, restrictTo, requireVerifiedUser } from "../middlewares/authMiddleware.js";
 import { validate } from "../middlewares/validate.js";
 import { sendSurveyByUniqueLinkSchema, surveySchema } from "../schemas/surveySchema.js";
-import { getFeedbackBySurvey } from "../controllers/feedbackController.js";
+import { getResponsesBySurvey } from "../controllers/responseController.js";
 import roles from "../utils/roles.js";
 import { createSurvey, deleteSurveyById, getSurveryByUniqueLinkId, getSurveysByOrganisation, sendEmailsWithSurveyLink, updateSurveyById } from "../controllers/SurveyController.js";
 

@@ -3,7 +3,7 @@ import { surveySchema, updateSurveyByIdSchema, sendSurveyByUniqueLinkSchema } fr
 describe("surveySchema validation", () => {
   it("should validate a correct survey object", () => {
     const validSurvey = {
-      title: "Customer Feedback",
+  title: "Customer Response",
       description: "Monthly survey",
       questions: [
         { questionText: "How was your experience?", type: "text" }
@@ -27,7 +27,7 @@ describe("surveySchema validation", () => {
 
   it("should fail if questions is empty", () => {
     const invalidSurvey = {
-      title: "Customer Feedback",
+  title: "Customer Response",
       description: "Monthly survey",
       questions: []
     };

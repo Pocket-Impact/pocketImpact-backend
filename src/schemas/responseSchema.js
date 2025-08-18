@@ -1,9 +1,8 @@
 import Joi from "joi";
 
-
-export const feedbackSchema = Joi.object({
+export const responseSchema = Joi.object({
     surveyId: Joi.string().required(),
-    feedbacks: Joi.array().items(
+    responses: Joi.array().items(
         Joi.object({
             questionId: Joi.string().required(),
             answer: Joi.string().required()
@@ -11,6 +10,6 @@ export const feedbackSchema = Joi.object({
     ).min(1).required()
 });
 
-export const getFeedbackBySurveySchema = Joi.object({
+export const getResponseBySurveySchema = Joi.object({
     surveyId: Joi.string().required()
 });

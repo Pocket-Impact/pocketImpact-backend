@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
             message: props => `${props.value} is not a valid phone number!`
         }
     },
-    organisation: {
+    organisationId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Organisation',
         required: true,
