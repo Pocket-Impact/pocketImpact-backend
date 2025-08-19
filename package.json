@@ -24,6 +24,7 @@
   "homepage": "https://github.com/Pocket-Impact/pocket-impact#readme",
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
+    "@xenova/transformers": "^2.17.2",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -35,6 +36,7 @@
     "joi": "^18.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.17.0",
+    "node-fetch": "^3.3.2",
     "sentiment": "^5.0.2"
   },
   "devDependencies": {

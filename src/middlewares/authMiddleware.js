@@ -19,7 +19,7 @@ export const protect = async(req, res, next) => {
                 message: "Access denied. User not found or no longer exists."
             });
         }
-        req.user = { id: user._id, role: user.role, organisation: user.organisation };
+        req.user = { id: user._id, role: user.role, organisationId: user.organisationId };
         next();
     } catch (error) {
         res.status(401).json({

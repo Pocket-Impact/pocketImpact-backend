@@ -50,7 +50,7 @@ const surveySchema = new mongoose.Schema({
         trim: true,
         default: () => crypto.randomBytes(8).toString('hex'),
     },
-    organisation: {
+    organisationId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Organisation',
         required: true,

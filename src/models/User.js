@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
             message: props => `${props.value} is not a valid phone number!`
         }
     },
-    organisation: {
+    organisationId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Organisation',
         required: true,
@@ -80,7 +80,7 @@ userSchema.statics.login = async function (email, password) {
 
         if (isMatch) {
 
-            const organisation = await mongoose.model('Organisation').findById(user.organisation).select('organisationName organisationCountry organisationSize');
+            const organisation = await mongoose.model('Organisation').findById(user.organisationId).select(' organisationName organisationCountry organisationSize');
 
 
             return {
@@ -90,6 +90,7 @@ userSchema.statics.login = async function (email, password) {
                 isVerified: user.isVerified,
                 role: user.role,
                 phonenumber: user.phonenumber,
+                organisationId: user.organisationId,
                 organisationName: organisation.organisationName,
             };
         }
