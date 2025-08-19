@@ -1,6 +1,6 @@
 import Response from "../models/Response.js";
 import Survey from "../models/Survey.js";
-import { analyzeAnswerSentiment } from "../utils/sentimentAnalysis.js"; // Assuming you have a utility for sentiment analysis
+import { analyzeSentiment } from "../utils/sentimentAnalysis.js";
 export const submitResponse = async (req, res) => {
     const { surveyId, responses } = req.body;
 
@@ -12,15 +12,6 @@ export const submitResponse = async (req, res) => {
    
 
     try {
-
-        // run seniment analysis if needed
-        responses.forEach(answer => {
-            if (typeof answer.answer === 'string') {
-                const sentimentResult = analyzeAnswerSentiment(answer.answer);
-                answer.sentiment = sentimentResult.sentiment; // Add sentiment to the answerr
-            }
-
-        });
         
         const survey = await Survey.findById(surveyId).exec();
         if (!survey) {
@@ -94,7 +85,7 @@ export const getResponsesBySurvey = async (req, res) => {
 };
 export const getResponsesByOrganisation = async (req, res) => {
     try {
-        const { organisationId } = req.params;
+        const organisationId = req.user.organisationId
         if (!organisationId) {
             return res.status(400).json({ message: "Organisation ID is required." });
         }
@@ -149,3 +140,37 @@ export const getResponsesByOrganisation = async (req, res) => {
     res.status(500).json({ message: "Server error while fetching responses by organisation." });
     }
 };
+
+
+export const analyzeUnprocessedResponses = async (req, res) => {
+  const { surveyId } = req.params;
+  const responses = await Response.find({ surveyId, sentiment: null });
+
+  if (!responses || responses.length === 0) {
+    return res.status(404).json({ message: "No unprocessed responses found." });
+  }
+  // Require minimum 10 responses
+  if (responses.length < 10) {
+    return res.status(400).json({
+      message: `At least 10 responses required to run analysis. You now have ${responses.length} responses.`,
+    });
+  }
+
+  // Analyze each response
+  await Promise.all(
+      responses.map(async (response) => {
+          // Analyze sentiment for every answer in a response
+          await Promise.all(
+              response.responses.map(async (answer) => {
+                  const sentiment = await analyzeSentiment(answer.answer);
+                  console.log(sentiment);
+                  
+                  answer.sentiment = sentiment[0].label?.toLowerCase();
+              })
+          );
+          await response.save();
+        })
+  );
+
+  res.status(200).json({ message: "Responses analyzed successfully." });
+}
