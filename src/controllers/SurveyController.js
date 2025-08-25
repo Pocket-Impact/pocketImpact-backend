@@ -40,7 +40,7 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
             return res.status(404).json({ message: "Survey not found." });
         }
         //-----------------------------------------
-        const surveyLink = `${process.env.FRONTEND_URL || "http://localhost:3000/api"}/surveys/unique/${survey.uniqueLinkId}`;
+        const surveyLink = `${process.env.CLIENT_URL || "http://localhost:3000/api"}/surveys/unique/${survey.uniqueLinkId}`;
     const subject = "We'd love your response! Please complete this survey";
         const text = `
         
