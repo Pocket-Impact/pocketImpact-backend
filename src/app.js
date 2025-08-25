@@ -17,6 +17,7 @@ app.use(cors({
 }));
 
 
+
 // Middleware to parse JSON requests
 app.use(express.json());
 // Middleware to parse URL-encoded requests
@@ -29,5 +30,13 @@ app.use('/api/users', userRoutes);
 app.use('/api/surveys', surverRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
-
+app.get('/', (req, res) => {
+    res.json(
+        {
+            "status": "success",
+            "message": "Welcome to PocketImpact API! 🚀",
+            "version": "1.0.0"
+        }
+    )
+})
 export default app;
