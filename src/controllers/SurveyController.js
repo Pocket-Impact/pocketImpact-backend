@@ -93,7 +93,7 @@ export const sendEmailsWithSurveyLink = async (req, res) => {
 // Controller to get all surveys for an organisation
 export const getSurveysByOrganisation = async (req, res) => {
     
-    const organisationId  = req.user.organisation;
+    const organisationId  = req.user.organisationId;
     if (!organisationId) {
         return res.status(400).json({ message: "Organisation ID is required." });
     }

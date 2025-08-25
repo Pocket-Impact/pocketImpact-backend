@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-const dbURI = process.env.DB_URI || 'mongodb://localhost:27017/pocket-impact';
+const dbURI =
+  process.env.DATABASE_URL || "mongodb://localhost:27017/pocket-impact";
 
 const connectDB = async () => {
     try {   
