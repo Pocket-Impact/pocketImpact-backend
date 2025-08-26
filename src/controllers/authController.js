@@ -72,7 +72,72 @@ export const create_new_account = async (req, res) => {
 
         //send verification email
         const subject = "Verify your account";
-        const text = `Your OTP is ${otp}. It is valid for 10 minutes.`;
+        const text = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Your OTP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Import Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0; padding:0; background-color:#191C1F; font-family:'Bricolage Grotesque','Bricolage Grotesque Fallback',Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+
+  <!-- Hidden preview text -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0;">
+    Your OTP is inside! It expires in 10 minutes.
+  </div>
+
+  <table width="100%" style="background-color:#191C1F; padding:24px;" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:600px; background-color:#1e1e1f; border-radius:12px; overflow:hidden;" cellpadding="0" cellspacing="0">
+        
+          <!-- Header / Brand -->
+          <tr>
+            <td align="center" style="background:linear-gradient(135deg, #2D4C35, #191C1F); padding:24px 20px;">
+              <h1 style="color:#ffffff; font-size:24px; margin:0; font-weight:700; font-family:'Bricolage Grotesque','Bricolage Grotesque Fallback',sans-serif;">
+                Pocket Impact — OTP Verification
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:30px 20px; color:#e2e8f0; font-family:'Bricolage Grotesque','Bricolage Grotesque Fallback',sans-serif;">
+              <p style="font-size:16px; margin:0 0 16px;">Hey there,</p>
+              <p style="font-size:16px; margin:0 0 20px;">
+                Use the code below to complete your login. It’s valid for the next 
+                <strong style="color:#9ae6b4;">10 minutes</strong>.
+              </p>
+              
+              <!-- OTP Code -->
+              <div style="text-align:center; margin:24px 0;">
+                <div style="display:inline-block; background:#101112; border:2px solid #2D4C35; border-radius:8px; padding:24px 16px;">
+                  <span style="font-family:Consolas, 'Courier New', monospace; font-size:32px; font-weight:700; letter-spacing:8px; color:#ffffff;">${otp}</span>
+                </div>
+              </div>
+
+              <p style="font-size:14px; margin:0;">If you didn’t request this, you can safely ignore this email — your account stays secure.</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#191C1F; color:#9ca3af; font-size:12px; padding:20px; text-align:center; font-family:'Bricolage Grotesque','Bricolage Grotesque Fallback',sans-serif;">
+              <p style="margin:4px 0;">Sent by <strong>Pocket Impact</strong></p>
+              <p style="margin:4px 0;">This code is valid for 10 minutes. Need help? Contact support.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
         await sendEmail(email, subject, text);
         res.status(201).json({
             status: "success",
@@ -215,10 +280,87 @@ export const forgotPassword = async (req, res) => {
         await user.save();
 
         // Send email with raw token in reset link
-        const resetURL = `http://localhost:3000/api/auth/reset-password?token=${resetToken}`;
-        const message = `Reset your password using this link (valid 10 min): ${resetURL}`;
+        const resetURL = `${process.env.CLIENT_URL || "http://localhost:3000/"}api/auth/reset-password?token=${resetToken}`;
+const subject = "Reset Your Password - Pocket Impact";
 
-        await sendEmail(user.email, 'Password Reset', message);
+const message = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Reset Your Password</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Import Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0; padding:0; background-color:#191C1F; font-family:'Bricolage Grotesque','Bricolage Grotesque Fallback',Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+
+  <!-- Hidden preview text -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0;">
+    Reset your Pocket Impact password — link valid for 10 minutes.
+  </div>
+
+  <table width="100%" style="background-color:#191C1F; padding:24px;" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:600px; background-color:#1e1e1f; border-radius:12px; overflow:hidden;" cellpadding="0" cellspacing="0">
+        
+          <!-- Header -->
+          <tr>
+            <td align="center" style="background:linear-gradient(135deg, #2D4C35, #191C1F); padding:24px 20px;">
+              <h1 style="color:#ffffff; font-size:24px; margin:0; font-weight:700;">Reset Your Password</h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:30px 24px; color:#e2e8f0;">
+              <p style="font-size:16px; margin:0 0 16px;">Hi,</p>
+              <p style="font-size:16px; margin:0 0 20px;">
+                You recently requested to reset your password. Click the button below to set up a new one.  
+                This link is valid for the next <strong style="color:#9ae6b4;">10 minutes</strong>.
+              </p>
+
+              <!-- Reset Link -->
+              <div style="text-align:center; margin:24px 0;">
+                <a href="${resetURL}" target="_blank" style="display:inline-block; background:linear-gradient(135deg, #2D4C35, #191C1F); color:#ffffff; text-decoration:none; padding:14px 28px; border-radius:8px; font-size:16px; font-weight:600;">
+                  Reset Password
+                </a>
+              </div>
+
+              <p style="font-size:14px; margin:0 0 16px;">
+                If the button doesn’t work, copy and paste this link into your browser:
+              </p>
+
+              <p style="font-size:14px; word-break:break-all; margin:0; color:#9ca3af;">
+                ${resetURL}
+              </p>
+
+              <p style="font-size:14px; margin:20px 0 0 0;">
+                If you didn’t request this, please ignore this email — your account will remain secure.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#191C1F; color:#9ca3af; font-size:12px; padding:20px; text-align:center;">
+              <p style="margin:4px 0;">© 2025 Pocket Impact — All rights reserved.</p>
+              <p style="margin:4px 0;">"AI-Powered Tools to Supercharge Your Social Impact"</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+
+        await sendEmail(user.email, subject, message);
 
         res.status(200).json({
             status: "success",
