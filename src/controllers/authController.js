@@ -38,7 +38,10 @@ export const create_new_account = async (req, res) => {
             organisationCountry,
             organisationSize
         });
-
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
 
         if (!organisation) {
             organisation = new Organisation({
@@ -52,11 +55,7 @@ export const create_new_account = async (req, res) => {
             return res.status(400).json({ message: "Organisation already exists ask your admin to add you to the organisation" });
         }
 
-        const existingUser = await User.findOne({ email });
 
-        if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" });
-        }
         const user = new User({
             fullname,
             email,
