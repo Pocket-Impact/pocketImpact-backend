@@ -15,8 +15,9 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 5. **Feedback Management**
 6. **Middleware**
 7. **Models & Enums**
-8. **Utilities**
-9. **Database Connection**
+8. **Dashboard**
+9. **Utilities**
+10. **Database Connection**
 
 ---
 
@@ -892,7 +893,77 @@ Authorization: Bearer <token>
 
 ---
 
-## 8. Utilities
+## 8. Dashboard
+
+### Get Dashboard Analytics
+
+**Endpoint:** `GET /api/dashboard`
+
+**Description:** Retrieves comprehensive analytics data for the dashboard including totals, daily feedback trends, sentiment analysis, top topics, and recent feedbacks.
+
+**Auth:** Yes (JWT required)
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Note:** The organisation ID is automatically retrieved from the authenticated user's session.
+
+**Response Format:**
+```json
+{
+  "status": "success",
+  "data": {
+    "totals": {
+      "surveys": 15,
+      "responses": 89,
+      "feedbacks": 23
+    },
+    "dailyFeedbacks": [
+      { "day": "Mon", "Feedbacks": 2 },
+      { "day": "Tue", "Feedbacks": 5 },
+      { "day": "Wed", "Feedbacks": 3 },
+      { "day": "Thu", "Feedbacks": 7 },
+      { "day": "Fri", "Feedbacks": 4 },
+      { "day": "Sat", "Feedbacks": 6 },
+      { "day": "Sun", "Feedbacks": 1 }
+    ],
+    "sentimentAnalysis": [
+      { "name": "Positive", "value": 2, "color": "#7CCF00" },
+      { "name": "Negative", "value": 3, "color": "#FF6900" },
+      { "name": "Neutral", "value": 6, "color": "#EFB100" }
+    ],
+    "topTopics": [
+      { "category": "Product", "count": 8 },
+      { "category": "Support", "count": 6 },
+      { "category": "Ux", "count": 4 },
+      { "category": "Features", "count": 3 },
+      { "category": "Performance", "count": 2 }
+    ],
+    "recentFeedbacks": [
+      {
+        "message": "Great user experience!",
+        "category": "Ux",
+        "sentiment": "Positive",
+        "date": "2024-01-15T10:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "message": "Failed to fetch dashboard data",
+  "error": "Error details"
+}
+```
+
+---
+
+## 10. Utilities
 
 - **generateOtp:** Generates a 6-digit OTP and expiration time (10 minutes from now).
 - **sendEmail:** Sends an email using SendGrid (for OTPs, notifications, survey links).
@@ -902,14 +973,14 @@ Authorization: Bearer <token>
 
 ---
 
-## 9. Database Connection
+## 11. Database Connection
 
 - MongoDB connection via Mongoose.
 - URI from `MONGO_URI` env variable or defaults to `mongodb://localhost:27017/pocket-impact`.
 
 ---
 
-## 10. Dependencies
+## 12. Dependencies
 
 ### Core Dependencies
 - **Express:** ^5.1.0 - Web framework
@@ -933,7 +1004,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 11. Environment Variables
+## 13. Environment Variables
 
 Required environment variables:
 - `MONGO_URI` - MongoDB connection string
@@ -945,7 +1016,7 @@ Required environment variables:
 
 ---
 
-## 12. API Base URL
+## 14. API Base URL
 
 **Development:** `http://localhost:3000`  
 **Production:** Set via environment variables
@@ -954,7 +1025,7 @@ All API endpoints are prefixed with `/api/`
 
 ---
 
-## 13. Rate Limiting & Security
+## 15. Rate Limiting & Security
 
 - JWT-based authentication with refresh tokens
 - Role-based access control (RBAC)
@@ -966,7 +1037,7 @@ All API endpoints are prefixed with `/api/`
 
 ---
 
-## 14. Error Handling
+## 16. Error Handling
 
 All API endpoints return consistent error responses:
 ```json
