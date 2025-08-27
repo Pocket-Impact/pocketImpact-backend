@@ -105,10 +105,11 @@ export const getDashboardData = async (req, res) => {
             }
         ]);
 
-        // Format top topics
+        // Format top topics with percentages
+        const totalFeedbackCount = totalFeedbacks;
         const formattedTopTopics = topTopics.map(topic => ({
             category: topic._id.charAt(0).toUpperCase() + topic._id.slice(1),
-            count: topic.count
+            percentage: Math.round((topic.count / totalFeedbackCount) * 100)
         }));
 
         // Get recent feedbacks (last 6)

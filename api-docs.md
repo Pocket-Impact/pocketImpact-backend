@@ -934,11 +934,11 @@ Authorization: Bearer <token>
       { "name": "Neutral", "value": 6, "color": "#EFB100" }
     ],
     "topTopics": [
-      { "category": "Product", "count": 8 },
-      { "category": "Support", "count": 6 },
-      { "category": "Ux", "count": 4 },
-      { "category": "Features", "count": 3 },
-      { "category": "Performance", "count": 2 }
+      { "category": "Product", "percentage": 35 },
+      { "category": "Support", "percentage": 26 },
+      { "category": "Ux", "percentage": 17 },
+      { "category": "Features", "percentage": 13 },
+      { "category": "Performance", "percentage": 9 }
     ],
     "recentFeedbacks": [
       {
@@ -976,7 +976,7 @@ Authorization: Bearer <token>
 ## 11. Database Connection
 
 - MongoDB connection via Mongoose.
-- URI from `MONGO_URI` env variable or defaults to `mongodb://localhost:27017/pocket-impact`.
+- URI from `DATABASE_URL` env variable (primary) or `MONGO_URI` (fallback), defaults to `mongodb://localhost:27017/pocket-impact`.
 
 ---
 
@@ -1007,12 +1007,34 @@ Authorization: Bearer <token>
 ## 13. Environment Variables
 
 Required environment variables:
-- `MONGO_URI` - MongoDB connection string
-- `JWT_SECRET` - JWT signing secret
-- `JWT_REFRESH_SECRET` - JWT refresh secret
+- `MONGO_URI` - MongoDB connection string (or `DATABASE_URL` as fallback)
+- `ACCESS_TOKEN_SECRET` - JWT access token signing secret
+- `REFRESH_TOKEN_SECRET` - JWT refresh token signing secret
 - `SENDGRID_API_KEY` - SendGrid API key for emails
+- `SENDGRID_SENDER_EMAIL` - Verified sender email address for SendGrid
 - `CLIENT_URL` - Frontend URL for CORS
-- `HUGGINGFACE_API_KEY` - API key for sentiment analysis (optional)
+- `HF_TOKEN` - HuggingFace API token for sentiment analysis (optional)
+
+**Example .env file:**
+```env
+# Database
+DATABASE_URL=mongodb://localhost:27017/pocket-impact
+# or MONGO_URI=mongodb://localhost:27017/pocket-impact
+
+# JWT Secrets
+ACCESS_TOKEN_SECRET=your_access_token_secret_here
+REFRESH_TOKEN_SECRET=your_refresh_token_secret_here
+
+# Email Service
+SENDGRID_API_KEY=your_sendgrid_api_key_here
+SENDGRID_SENDER_EMAIL=your_verified_email@domain.com
+
+# Frontend
+CLIENT_URL=http://localhost:3000
+
+# AI Services (Optional)
+HF_TOKEN=your_huggingface_token_here
+```
 
 ---
 
@@ -1034,6 +1056,11 @@ All API endpoints are prefixed with `/api/`
 - Password hashing with bcrypt
 - OTP verification for user registration
 - Secure password reset flow
+
+**Note:** The current implementation has some environment variable inconsistencies that should be addressed:
+- JWT secrets use `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` in code but documentation previously referenced `JWT_SECRET`
+- Database connection prioritizes `DATABASE_URL` over `MONGO_URI`
+- HuggingFace API uses `HF_TOKEN` instead of `HUGGINGFACE_API_KEY`
 
 ---
 

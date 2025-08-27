@@ -2,7 +2,7 @@ import express from 'express';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import responseRoutes from './routes/responseRoutes.js';
-import surverRoutes from './routes/surveyRoutes.js';
+import surveyRoutes from './routes/surveyRoutes.js';
 import dotenv from 'dotenv';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
@@ -28,7 +28,7 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/surveys', surverRoutes);
+app.use('/api/surveys', surveyRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/dashboard', dashboardRoutes);

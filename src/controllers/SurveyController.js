@@ -114,7 +114,7 @@ export const getSurveysByOrganisation = async (req, res) => {
     }
 };
 
-export const getSurveryByUniqueLinkId = async (req, res) => {
+export const getSurveyByUniqueLinkId = async (req, res) => {
     const { uniqueLinkId } = req.params;
     if (!uniqueLinkId) {
         return res.status(400).json({ message: "Unique link ID is required." });
