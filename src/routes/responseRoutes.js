@@ -14,7 +14,7 @@ router.get('/organisation/',protect, validate(getResponseBySurveySchema), getRes
 
 // Route to get responses by survey ID
 router.get('/survey/:surveyId',protect, validate(getResponseBySurveySchema), getResponsesBySurvey);
-router.post('/analyze-sentiment', protect, restrictTo('admin'), requireVerifiedUser, analyzeUnprocessedResponses);
+router.post('/analyze-sentiment/:surveyId', protect, restrictTo('admin'), requireVerifiedUser, analyzeUnprocessedResponses);
 
 
 export default router;
