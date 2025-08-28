@@ -13,7 +13,7 @@ router.post('/', validate(responseSchema), submitResponse);
 router.get('/organisation/',protect, validate(getResponseBySurveySchema), getResponsesByOrganisation);
 
 // Route to get responses by survey ID
-router.get('/survey/:surveyId',protect, validate(getResponseBySurveySchema), getResponsesBySurvey);
+router.get('/survey/:uniqueLinkId',protect, validate(getResponseBySurveySchema), getResponsesBySurvey);
 router.post('/analyze-sentiment/:surveyId', protect, restrictTo('admin'), requireVerifiedUser, analyzeUnprocessedResponses);
 
 
