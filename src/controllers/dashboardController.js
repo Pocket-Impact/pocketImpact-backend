@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import Survey from '../models/Survey.js';
 import Response from '../models/Response.js';
 import Feedback from '../models/Feedback.js';
+import Organisation from '../models/Organisation.js';
+import User from '../models/User.js';
 
 export const getDashboardData = async (req, res) => {
     try {
@@ -149,6 +151,87 @@ export const getDashboardData = async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch dashboard data',
+            error: error.message
+        });
+    }
+};
+
+export const getOrganisationData = async (req, res) => {
+    try {
+        const organisationId = req.user.organisationId;
+        
+        if (!organisationId) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Organisation ID is required'
+            });
+        }
+
+        // Get organisation details
+        const organisation = await Organisation.findById(organisationId);
+        if (!organisation) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Organisation not found'
+            });
+        }
+
+        // Get user counts by role
+        const userCounts = await User.aggregate([
+            {
+                $match: {
+                    organisationId: new mongoose.Types.ObjectId(organisationId)
+                }
+            },
+            {
+                $group: {
+                    _id: "$role",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Initialize counts
+        let adminCount = 0;
+        let analystCount = 0;
+        let researcherCount = 0;
+
+        // Map the counts to variables
+        userCounts.forEach(item => {
+            switch (item._id) {
+                case 'admin':
+                    adminCount = item.count;
+                    break;
+                case 'analyst':
+                    analystCount = item.count;
+                    break;
+                case 'researcher':
+                    researcherCount = item.count;
+                    break;
+            }
+        });
+
+        // Get total user count
+        const totalUsers = adminCount + analystCount + researcherCount;
+
+        res.json({
+            status: 'success',
+            data: {
+                organisationName: organisation.organisationName,
+                organisationCountry: organisation.organisationCountry,
+                organisationSize: organisation.organisationSize,
+                totalUsers: totalUsers,
+                adminUsers: adminCount,
+                analysts: analystCount,
+                researchers: researcherCount
+            }
+        });
+
+    } catch (error) {
+        console.error('Organisation data error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch organisation data',
             error: error.message
         });
     }

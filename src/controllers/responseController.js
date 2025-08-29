@@ -40,9 +40,9 @@ export const submitResponse = async (req, res) => {
 
 export const getResponsesBySurvey = async (req, res) => {
     try {
-        const { surveyId } = req.params;
+        const { uniqueLinkId } = req.params;
 
-    const responses = await Response.find({ surveyId }).exec();
+    const responses = await Response.find({ uniqueLinkId }).exec();
 
         if (!responses || responses.length === 0) {
             return res.status(404).json({ message: "No responses found for this survey." });
