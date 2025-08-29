@@ -13,8 +13,16 @@ const app = express();
 
 // Middleware to enable CORS
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: [
+        process.env.CLIENT_URL || 'http://localhost:3000',
+        'https://pocket-impact.netlify.app',
+        'https://pocket-impact.netlify.app/',
+        'https://pocket-impact.netlify.app/*'
+    ],
     credentials: true, // Allow cookies to be sent with requests
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['Set-Cookie']
 }));
 
 

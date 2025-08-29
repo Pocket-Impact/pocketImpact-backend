@@ -104,14 +104,14 @@ export const login = async (req, res) => {
             maxAge: 60 * 60 * 1000, // 1hr
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
         });
 
         res.cookie('refreshToken', refreshToken, {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
         });
 
         
@@ -156,7 +156,7 @@ export const refresh = (req, res) => {
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             maxAge: 15 * 60 * 1000 // 15 min
         });
 
@@ -214,7 +214,7 @@ export const forgotPassword = async (req, res) => {
         await user.save();
 
         // Send email with raw token in reset link
-        const resetURL = `http://localhost:3000/api/auth/reset-password?token=${resetToken}`;
+        const resetURL = `${process.env.CLIENT_URL || 'http://localhost:3000'}/api/auth/reset-password?token=${resetToken}`;
         const message = `Reset your password using this link (valid 10 min): ${resetURL}`;
 
         await sendEmail(user.email, 'Password Reset', message);
@@ -266,8 +266,16 @@ export const check = (req, res) => {
 }
 
 export const logout = (req, res) => {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+    });
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+    });
     res.status(200).json({
         status: "success",
         message: "Logout successful"
