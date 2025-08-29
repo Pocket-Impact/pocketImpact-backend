@@ -156,7 +156,9 @@ export const refresh = (req, res) => {
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+            sameSite: 'lax', // Changed from conditional to 'lax' for better compatibility
+            path: '/', // Add explicit path
+            domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined, // Add domain for production
             maxAge: 15 * 60 * 1000 // 15 min
         });
 
@@ -269,12 +271,16 @@ export const logout = (req, res) => {
     res.clearCookie('accessToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined,
     });
     res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+        sameSite: 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined,
     });
     res.status(200).json({
         status: "success",

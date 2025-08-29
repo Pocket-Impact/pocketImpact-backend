@@ -58,7 +58,7 @@ export const add_user_to_organisation = async (req, res) => {
 
 export const get_all_users = async (req, res) => {
     try {
-        const users = await User.find({ organisationId: req.user.organisation }).populate('organisation').select('-password -__v');
+        const users = await User.find({ organisationId: req.user.organisationId }).populate('organisation').select('-password -__v');
         res.status(200).json({
           status: "success",
           message: "Users fetched successfully",
