@@ -281,7 +281,6 @@ export const forgotPassword = async (req, res) => {
         await user.save();
 
         // Send email with raw token in reset link
-
         const resetURL = `${process.env.CLIENT_URL || "http://localhost:3000/"}api/auth/reset-password?token=${resetToken}`;
 const subject = "Reset Your Password - Pocket Impact";
 
