@@ -98,14 +98,14 @@ export const analyzeUnprocessedFeedbacks = async (req, res) => {
     }
 
     // Require minimum 50 feedbacks
-    if (feedbacks.length < 50) {
-      return res
-        .status(400)
-        .json({
-          message:
-            `At least 50 feedbacks required to run analysis. you have ${feedbacks.length}`,
-        });
-    }
+    // if (feedbacks.length < 50) {
+    //   return res
+    //     .status(400)
+    //     .json({
+    //       message:
+    //         `At least 50 feedbacks required to run analysis. you have ${feedbacks.length}`,
+    //     });
+    // }
 
     // Analyze all feedbacks concurrently
     await Promise.all(

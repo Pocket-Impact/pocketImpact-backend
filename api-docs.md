@@ -2,7 +2,7 @@
 
 ## Overview
 
-Pocket Impact is a Node.js/Express REST API for managing users, organisations, surveys, and responses, with authentication and role-based access control. It uses MongoDB for data storage.
+Pocket Impact is a Node.js/Express REST API for managing users, organisations, surveys, responses, and feedback with authentication and role-based access control. It uses MongoDB for data storage and includes sentiment analysis capabilities.
 
 ---
 
@@ -10,11 +10,14 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 
 1. **Authentication**
 2. **User Management**
-3. **Survey & Response**
-4. **Middleware**
-5. **Models & Enums**
-6. **Utilities**
-7. **Database Connection**
+3. **Survey Management**
+4. **Response Management**
+5. **Feedback Management**
+6. **Middleware**
+7. **Models & Enums**
+8. **Dashboard**
+9. **Utilities**
+10. **Database Connection**
 
 ---
 
@@ -57,7 +60,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "All fields are required"
 }
 ```
-`201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Status Codes:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Login – `POST /api/auth/login` – `200 OK`
 **Auth:** No  
@@ -80,7 +83,10 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
       "fullname": "Jane Doe",
       "email": "jane@example.com",
       "role": "admin",
-      "isVerified": true
+      "isVerified": true,
+      "phonenumber": "+1234567890",
+      "organisationId": "orgId",
+      "organisationName": "Acme Corp"
     }
   }
 }
@@ -92,7 +98,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "Email and password are required"
 }
 ```
-`200 OK`, `400 Bad Request`
+**Status Codes:** `200 OK`, `400 Bad Request`
 
 ### Refresh Token – `POST /api/auth/refresh-token` – `200 OK`
 **Auth:** No (requires valid refresh token)  
@@ -117,10 +123,15 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "Invalid or expired refresh token."
 }
 ```
-`200 OK`, `401 Unauthorized`
+**Status Codes:** `200 OK`, `401 Unauthorized`
 
 ### Verify OTP – `POST /api/auth/verify-otp` – `200 OK`
+**Auth:** Yes (JWT required)  
 **Description:** Verify the OTP sent to the user's email.  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Request Body:**  
 ```json
 {
@@ -149,10 +160,15 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "Invalid OTP"
 }
 ```
-`200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
 
 ### Resend OTP – `GET /api/auth/resend-otp` – `200 OK`
+**Auth:** Yes (JWT required)  
 **Description:** Resend a new OTP to the user's email.  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Success Response:**  
 ```json
 {
@@ -170,9 +186,10 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "User not found"
 }
 ```
-`200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
 
 ### Forgot Password – `POST /api/auth/forgot-password` – `200 OK`
+**Auth:** No  
 **Description:** Request a password reset link.  
 **Request Body:**  
 ```json
@@ -194,9 +211,10 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "No account found with that email address."
 }
 ```
-`200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 ### Reset Password – `POST /api/auth/reset-password` – `200 OK`
+**Auth:** No  
 **Description:** Reset password using the token sent to email.  
 **Request Body:**  
 ```json
@@ -219,32 +237,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "Invalid or expired password reset token."
 }
 ```
-`200 OK`, `400 Bad Request`, `500 Internal Server Error`
-
-### Change Password – `POST /api/auth/change-password` – `200 OK`
-**Description:** Change password for a logged-in user.  
-**Request Body:**  
-```json
-{
-  "oldPassword": "securePassword123",
-  "newPassword": "newSecurePassword456"
-}
-```
-**Success Response:**  
-```json
-{
-  "status": "success",
-  "message": "Password changed successfully"
-}
-```
-**Error Response:**  
-```json
-{
-  "status": "fail",
-  "message": "Incorrect current password"
-}
-```
-`200 OK`, `400 Bad Request`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Check Authenticated User – `GET /api/auth/check` – `200 OK`
 **Auth:** Yes (JWT required)  
@@ -271,9 +264,10 @@ Authorization: Bearer <token>
   "message": "Unauthorized access"
 }
 ```
-`200 OK`, `401 Unauthorized`
+**Status Codes:** `200 OK`, `401 Unauthorized`
 
 ### Logout – `GET /api/auth/logout` – `200 OK`
+**Auth:** No  
 **Description:** Log out the current user (clears JWT cookies).  
 **Success Response:**  
 ```json
@@ -282,7 +276,7 @@ Authorization: Bearer <token>
   "message": "Logged out successfully."
 }
 ```
-`200 OK`
+**Status Codes:** `200 OK`
 
 ---
 
@@ -327,7 +321,7 @@ Authorization: Bearer <token>
   "message": "Email already exists"
 }
 ```
-`201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Status Codes:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Get All Users in Organisation – `GET /api/users/all-users` – `200 OK`
 **Auth:** Yes (JWT required)  
@@ -352,11 +346,70 @@ Authorization: Bearer <token>
   ]
 }
 ```
-`200 OK`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `500 Internal Server Error`
+
+### Update User – `PUT /api/users/update-user` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin only  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Description:** Update user details in the organisation.  
+**Request Body:**  
+```json
+{
+  "userId": "userId",
+  "fullname": "John Smith Updated",
+  "phonenumber": "+1234567890",
+  "email": "john.updated@example.com",
+  "role": "researcher"
+}
+```
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "User updated successfully",
+  "data": {
+    "user": {
+      "id": "userId",
+      "fullname": "John Smith Updated",
+      "email": "john.updated@example.com",
+      "role": "researcher"
+    }
+  }
+}
+```
+**Status Codes:** `200 OK`, `400 Bad Request`, `404 Not Found`, `500 Internal Server Error`
+
+### Delete User – `DELETE /api/users/delete-user/:id` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin only  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Description:** Delete a user from the organisation by ID.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "User deleted successfully"
+}
+```
+**Error Response:**  
+```json
+{
+  "status": "fail",
+  "message": "User not found"
+}
+```
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 ---
 
-## 3. Survey & Response
+## 3. Survey Management
 
 ### Create Survey – `POST /api/surveys` – `201 Created`
 **Auth:** Yes (JWT required)  
@@ -405,31 +458,114 @@ Authorization: Bearer <token>
   "message": "Title, questions, organisation, and createdBy are required."
 }
 ```
-`201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Status Codes:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
-### Get Surveys – `GET /api/surveys/:organisationId` – `200 OK`
+### Get Surveys by Organisation – `GET /api/surveys` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst, Researcher  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Description:** Get all surveys for the current organisation.  
-`200 OK`, `500 Internal Server Error`
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": "surveyId",
+      "title": "Customer Satisfaction Survey",
+      "description": "Monthly response survey",
+      "questions": [ ... ]
+    }
+  ]
+}
+```
+**Status Codes:** `200 OK`, `500 Internal Server Error`
 
 ### Update Survey – `PUT /api/surveys/:surveyId` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Description:** Update a survey by ID.  
 **Request Body:** `title`, `description`, `questions`  
-`200 OK`, `400 Bad Request`, `500 Internal Server Error`
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Survey updated successfully",
+  "data": {
+    "survey": { ... }
+  }
+}
+```
+**Status Codes:** `200 OK`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Delete Survey – `DELETE /api/surveys/:surveyId` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Description:** Delete a survey by ID.  
-`200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Survey deleted successfully"
+}
+```
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
 ### Send Survey Link – `POST /api/surveys/send-survey-link` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Description:** Send survey link via email to multiple recipients.  
-**Request Body:** `surveyId`, `emails`  
-`200 OK`, `400 Bad Request`, `500 Internal Server Error`
+**Request Body:**  
+```json
+{
+  "surveyId": "surveyId",
+  "emails": ["user1@example.com", "user2@example.com"]
+}
+```
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Survey links sent successfully"
+}
+```
+**Status Codes:** `200 OK`, `400 Bad Request`, `500 Internal Server Error`
 
 ### Get Survey by Unique Link – `GET /api/surveys/unique/:uniqueLinkId` – `200 OK`
+**Auth:** No  
 **Description:** Get a survey by its unique link ID.  
-`200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "data": {
+    "survey": { ... }
+  }
+}
+```
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
+
+---
+
+## 4. Response Management
 
 ### Submit Response – `POST /api/responses` – `201 Created`
+**Auth:** No  
 **Description:** Submit responses for a survey. Each answer is analyzed for sentiment (positive, negative, neutral) and the result is stored with the response.  
 **Request Body:**  
 ```json
@@ -473,10 +609,14 @@ Authorization: Bearer <token>
   "message": "Survey ID and responses are required."
 }
 ```
-`201 Created`, `400 Bad Request`, `500 Internal Server Error`
+**Status Codes:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
 
-
-### Get Responses by Survey – `GET /api/responses/:surveyId` – `200 OK`
+### Get Responses by Survey – `GET /api/responses/survey/:surveyId` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
 **Description:** Get all responses for a specific survey, including sentiment analysis for each answer and question details.  
 **Success Response:**  
 ```json
@@ -509,44 +649,15 @@ Authorization: Bearer <token>
   "message": "No responses found for this survey."
 }
 ```
-`200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
-### Submit Organisation Response – `POST /api/responses/organisation` – `201 Created`
-**Description:** Submit general response for an organisation (not tied to a survey). Response can be categorized and optionally analyzed for sentiment.  
-**Request Body:**  
-```json
-{
-  "organisationId": "org123",
-  "message": "Great product, but could be faster!",
-  "category": "performance"
-}
+### Get Responses by Organisation – `GET /api/responses/organisation/` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Headers:**  
+```http
+Authorization: Bearer <token>
 ```
-**Success Response:**  
-```json
-{
-  "status": "success",
-  "message": "Response submitted successfully.",
-  "data": {
-    "_id": "responseId",
-    "organisationId": "org123",
-    "message": "Great product, but could be faster!",
-    "category": "performance",
-    "sentiment": "neutral",
-    "createdAt": "2025-08-18T19:32:36.000Z"
-  }
-}
-```
-**Error Response:**  
-```json
-{
-  "status": "fail",
-  "message": "Organisation and message are required."
-}
-```
-`201 Created`, `400 Bad Request`, `500 Internal Server Error`
-
-### Get Organisation Responses – `GET /api/responses/organisation/:organisationId` – `200 OK`
-**Description:** Get all general responses for a specific organisation.  
+**Description:** Get all general responses for the current organisation.  
 **Success Response:**  
 ```json
 {
@@ -572,29 +683,134 @@ Authorization: Bearer <token>
   "message": "No responses found for this organisation."
 }
 ```
-`200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
 
-### Delete Organisation Response – `DELETE /api/responses/organisation/:id` – `200 OK`
-**Description:** Delete a general response entry by its ID.  
+---
+
+## 5. Feedback Management
+
+### Submit Feedback – `POST /api/feedbacks` – `201 Created`
+**Auth:** No  
+**Description:** Submit general feedback for an organisation (not tied to a survey). Response can be categorized and optionally analyzed for sentiment.  
+**Request Body:**  
+```json
+{
+  "organisationId": "org123",
+  "message": "Great product, but could be faster!",
+  "category": "performance"
+}
+```
 **Success Response:**  
 ```json
 {
   "status": "success",
-  "message": "Response deleted successfully."
+  "message": "Feedback submitted successfully.",
+  "data": {
+    "_id": "feedbackId",
+    "organisationId": "org123",
+    "message": "Great product, but could be faster!",
+    "category": "performance",
+    "sentiment": null,
+    "createdAt": "2025-08-18T19:32:36.000Z"
+  }
 }
 ```
 **Error Response:**  
 ```json
 {
   "status": "fail",
-  "message": "Response not found."
+  "message": "Organisation and message are required."
 }
 ```
-`200 OK`, `404 Not Found`, `500 Internal Server Error`
+**Status Codes:** `201 Created`, `400 Bad Request`, `500 Internal Server Error`
+
+### Get Feedback by Organisation – `GET /api/feedbacks` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Description:** Get all feedback for the current organisation.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Feedback fetched successfully.",
+  "data": [
+    {
+      "_id": "feedbackId",
+      "organisationId": "org123",
+      "message": "Great product, but could be faster!",
+      "category": "performance",
+      "sentiment": "neutral",
+      "createdAt": "2025-08-18T19:32:36.000Z"
+    }
+    // ...
+  ]
+}
+```
+**Error Response:**  
+```json
+{
+  "status": "fail",
+  "message": "No feedback found for this organisation."
+}
+```
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
+
+### Delete Feedback – `DELETE /api/feedbacks/:id` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin only  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Description:** Delete a feedback entry by its ID.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Feedback deleted successfully."
+}
+```
+**Error Response:**  
+```json
+{
+  "status": "fail",
+  "message": "Feedback not found."
+}
+```
+**Status Codes:** `200 OK`, `404 Not Found`, `500 Internal Server Error`
+
+### Analyze Feedback Sentiment – `POST /api/feedbacks/analyze-sentiment` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin only  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Description:** Analyze sentiment for all unprocessed feedback entries in the organisation.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Sentiment analysis completed",
+  "data": {
+    "processedCount": 5,
+    "results": [
+      {
+        "feedbackId": "feedbackId",
+        "sentiment": "positive"
+      }
+    ]
+  }
+}
+```
+**Status Codes:** `200 OK`, `500 Internal Server Error`
 
 ---
 
-## 4. Middleware
+## 6. Middleware
 
 - **protect:** Checks for JWT in cookies, verifies token, attaches user info to `req.user`.
 - **restrictTo(...roles):** Restricts access to users with specified roles.
@@ -605,18 +821,19 @@ Authorization: Bearer <token>
   ```
 
 - **requireVerifiedUser:** Ensures the user is verified before allowing access to certain routes.
+- **validate(schema):** Validates request body against Joi schemas.
 
 ---
 
-## 5. Models & Enums
+## 7. Models & Enums
 
 ### User
 - `fullname` (string, required)
 - `email` (string, required, unique, validated)
 - `phonenumber` (string, required, validated, E.164 format)
-- `organisation` (ObjectId, ref: Organisation, required)
+- `organisationId` (ObjectId, ref: Organisation, required)
 - `role` (enum: 'admin', 'analyst', 'researcher', required)
-- `password` (string, required, hashed)
+- `password` (string, required, hashed, minlength: 6)
 - `isVerified` (boolean, default: false)
 - `otp` (string)
 - `otpExpires` (Date)
@@ -644,12 +861,13 @@ Authorization: Bearer <token>
   - `questionId` (ObjectId or string, required)
   - `answer` (string, required)
   - `sentiment` (string, enum: 'positive', 'negative', 'neutral', default: 'neutral')
-- For organisation responses:
-  - `organisationId` (ObjectId, ref: Organisation, required)
-  - `message` (string, required)
-  - `category` (string, enum: 'product', 'ux', 'support', 'pricing', 'features', 'performance', 'other', default: 'other')
-  - `sentiment` (string, enum: 'positive', 'negative', 'neutral', default: null)
-  - `createdAt` (Date)
+
+### Feedback
+- `organisationId` (ObjectId, ref: Organisation, required)
+- `message` (string, required)
+- `category` (string, enum: 'product', 'ux', 'support', 'pricing', 'features', 'performance', 'other', default: 'other')
+- `sentiment` (string, enum: 'positive', 'negative', 'neutral', default: null)
+- `createdAt` (Date)
 
 ### Enums
 - **User Roles:**
@@ -664,10 +882,88 @@ Authorization: Bearer <token>
   - `rating`
   - `text`
   - `multiple-choice`
+- **Feedback Categories:**
+  - `product`
+  - `ux`
+  - `support`
+  - `pricing`
+  - `features`
+  - `performance`
+  - `other`
 
 ---
 
-## 6. Utilities
+## 8. Dashboard
+
+### Get Dashboard Analytics
+
+**Endpoint:** `GET /api/dashboard`
+
+**Description:** Retrieves comprehensive analytics data for the dashboard including totals, daily feedback trends, sentiment analysis, top topics, and recent feedbacks.
+
+**Auth:** Yes (JWT required)
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
+
+**Note:** The organisation ID is automatically retrieved from the authenticated user's session.
+
+**Response Format:**
+```json
+{
+  "status": "success",
+  "data": {
+    "totals": {
+      "surveys": 15,
+      "responses": 89,
+      "feedbacks": 23
+    },
+    "dailyFeedbacks": [
+      { "day": "Mon", "Feedbacks": 2 },
+      { "day": "Tue", "Feedbacks": 5 },
+      { "day": "Wed", "Feedbacks": 3 },
+      { "day": "Thu", "Feedbacks": 7 },
+      { "day": "Fri", "Feedbacks": 4 },
+      { "day": "Sat", "Feedbacks": 6 },
+      { "day": "Sun", "Feedbacks": 1 }
+    ],
+    "sentimentAnalysis": [
+      { "name": "Positive", "value": 2, "color": "#7CCF00" },
+      { "name": "Negative", "value": 3, "color": "#FF6900" },
+      { "name": "Neutral", "value": 6, "color": "#EFB100" }
+    ],
+    "topTopics": [
+      { "category": "Product", "percentage": 35 },
+      { "category": "Support", "percentage": 26 },
+      { "category": "Ux", "percentage": 17 },
+      { "category": "Features", "percentage": 13 },
+      { "category": "Performance", "percentage": 9 }
+    ],
+    "recentFeedbacks": [
+      {
+        "message": "Great user experience!",
+        "category": "Ux",
+        "sentiment": "Positive",
+        "date": "2024-01-15T10:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "message": "Failed to fetch dashboard data",
+  "error": "Error details"
+}
+```
+
+---
+
+## 10. Utilities
 
 - **generateOtp:** Generates a 6-digit OTP and expiration time (10 minutes from now).
 - **sendEmail:** Sends an email using SendGrid (for OTPs, notifications, survey links).
@@ -677,9 +973,111 @@ Authorization: Bearer <token>
 
 ---
 
-## 7. Database Connection
+## 11. Database Connection
 
 - MongoDB connection via Mongoose.
-- URI from `MONGO_URI` env variable or defaults to `mongodb://localhost:27017/pocket-impact`.
+- URI from `DATABASE_URL` env variable (primary) or `MONGO_URI` (fallback), defaults to `mongodb://localhost:27017/pocket-impact`.
 
 ---
+
+## 12. Dependencies
+
+### Core Dependencies
+- **Express:** ^5.1.0 - Web framework
+- **Mongoose:** ^8.17.0 - MongoDB ODM
+- **JWT:** ^9.0.2 - Authentication tokens
+- **bcrypt:** ^6.0.0 - Password hashing
+- **Joi:** ^18.0.0 - Request validation
+- **SendGrid:** ^8.1.5 - Email service
+- **CORS:** ^2.8.5 - Cross-origin resource sharing
+- **Cookie Parser:** ^1.4.7 - Cookie handling
+
+### AI & Analysis
+- **@xenova/transformers:** ^2.17.2 - Sentiment analysis
+- **sentiment:** ^5.0.2 - Text sentiment scoring
+
+### Development
+- **Nodemon:** ^3.1.10 - Development server
+- **Jest:** ^30.0.5 - Testing framework
+- **ESLint:** ^9.32.0 - Code linting
+- **Prettier:** ^3.6.2 - Code formatting
+
+---
+
+## 13. Environment Variables
+
+Required environment variables:
+- `MONGO_URI` - MongoDB connection string (or `DATABASE_URL` as fallback)
+- `ACCESS_TOKEN_SECRET` - JWT access token signing secret
+- `REFRESH_TOKEN_SECRET` - JWT refresh token signing secret
+- `SENDGRID_API_KEY` - SendGrid API key for emails
+- `SENDGRID_SENDER_EMAIL` - Verified sender email address for SendGrid
+- `CLIENT_URL` - Frontend URL for CORS
+- `HF_TOKEN` - HuggingFace API token for sentiment analysis (optional)
+
+**Example .env file:**
+```env
+# Database
+DATABASE_URL=mongodb://localhost:27017/pocket-impact
+# or MONGO_URI=mongodb://localhost:27017/pocket-impact
+
+# JWT Secrets
+ACCESS_TOKEN_SECRET=your_access_token_secret_here
+REFRESH_TOKEN_SECRET=your_refresh_token_secret_here
+
+# Email Service
+SENDGRID_API_KEY=your_sendgrid_api_key_here
+SENDGRID_SENDER_EMAIL=your_verified_email@domain.com
+
+# Frontend
+CLIENT_URL=http://localhost:3000
+
+# AI Services (Optional)
+HF_TOKEN=your_huggingface_token_here
+```
+
+---
+
+## 14. API Base URL
+
+**Development:** `http://localhost:3000`  
+**Production:** Set via environment variables
+
+All API endpoints are prefixed with `/api/`
+
+---
+
+## 15. Rate Limiting & Security
+
+- JWT-based authentication with refresh tokens
+- Role-based access control (RBAC)
+- Input validation using Joi schemas
+- CORS enabled with configurable origins
+- Password hashing with bcrypt
+- OTP verification for user registration
+- Secure password reset flow
+
+**Note:** The current implementation has some environment variable inconsistencies that should be addressed:
+- JWT secrets use `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` in code but documentation previously referenced `JWT_SECRET`
+- Database connection prioritizes `DATABASE_URL` over `MONGO_URI`
+- HuggingFace API uses `HF_TOKEN` instead of `HUGGINGFACE_API_KEY`
+
+---
+
+## 16. Error Handling
+
+All API endpoints return consistent error responses:
+```json
+{
+  "status": "fail",
+  "message": "Descriptive error message"
+}
+```
+
+Common HTTP status codes:
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request
+- `401` - Unauthorized
+- `404` - Not Found
+- `500` - Internal Server Error

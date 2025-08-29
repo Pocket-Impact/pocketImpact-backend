@@ -38,7 +38,10 @@ export const create_new_account = async (req, res) => {
             organisationCountry,
             organisationSize
         });
-
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already exists" });
+        }
 
         if (!organisation) {
             organisation = new Organisation({
@@ -52,11 +55,7 @@ export const create_new_account = async (req, res) => {
             return res.status(400).json({ message: "Organisation already exists ask your admin to add you to the organisation" });
         }
 
-        const existingUser = await User.findOne({ email });
 
-        if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" });
-        }
         const user = new User({
             fullname,
             email,
@@ -170,14 +169,14 @@ export const login = async (req, res) => {
             maxAge: 60 * 60 * 1000, // 1hr
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
         });
 
         res.cookie('refreshToken', refreshToken, {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
         });
 
         
@@ -222,7 +221,7 @@ export const refresh = (req, res) => {
         res.cookie('accessToken', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
             maxAge: 15 * 60 * 1000 // 15 min
         });
 
@@ -409,8 +408,16 @@ export const check = (req, res) => {
 }
 
 export const logout = (req, res) => {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+    });
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Strict',
+    });
     res.status(200).json({
         status: "success",
         message: "Logout successful"

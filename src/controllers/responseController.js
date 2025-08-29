@@ -40,9 +40,9 @@ export const submitResponse = async (req, res) => {
 
 export const getResponsesBySurvey = async (req, res) => {
     try {
-        const { surveyId } = req.params;
+        const { uniqueLinkId } = req.params;
 
-    const responses = await Response.find({ surveyId }).exec();
+    const responses = await Response.find({ uniqueLinkId }).exec();
 
         if (!responses || responses.length === 0) {
             return res.status(404).json({ message: "No responses found for this survey." });
@@ -150,11 +150,11 @@ export const analyzeUnprocessedResponses = async (req, res) => {
     return res.status(404).json({ message: "No unprocessed responses found." });
   }
   // Require minimum 10 responses
-  if (responses.length < 10) {
-    return res.status(400).json({
-      message: `At least 10 responses required to run analysis. You now have ${responses.length} responses.`,
-    });
-  }
+//   if (responses.length < 10) {
+//     return res.status(400).json({
+//       message: `At least 10 responses required to run analysis. You now have ${responses.length} responses.`,
+//     });
+//   }
 
   // Analyze each response
   await Promise.all(

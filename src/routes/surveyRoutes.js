@@ -4,7 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { sendSurveyByUniqueLinkSchema, surveySchema } from "../schemas/surveySchema.js";
 import { getResponsesBySurvey } from "../controllers/responseController.js";
 import roles from "../utils/roles.js";
-import { createSurvey, deleteSurveyById, getSurveryByUniqueLinkId, getSurveysByOrganisation, sendEmailsWithSurveyLink, updateSurveyById } from "../controllers/SurveyController.js";
+import { createSurvey, deleteSurveyById, getSurveyByUniqueLinkId, getSurveysByOrganisation, sendEmailsWithSurveyLink, updateSurveyById } from "../controllers/SurveyController.js";
 
 
 const router = Router();
@@ -19,7 +19,7 @@ router.get('/', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALY
 router.post('/send-survey-link', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALYST),validate(sendSurveyByUniqueLinkSchema), sendEmailsWithSurveyLink);
 
 // Route to get a survey by unique link ID
-router.get('/unique/:uniqueLinkId', getSurveryByUniqueLinkId);
+router.get('/unique/:uniqueLinkId', getSurveyByUniqueLinkId);
 
 // Route to delete a survey by ID
 router.delete('/:surveyId', protect, requireVerifiedUser, restrictTo(roles.ADMIN,roles.ANALYST), deleteSurveyById);

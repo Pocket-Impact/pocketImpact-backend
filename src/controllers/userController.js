@@ -131,6 +131,8 @@ export const add_user_to_organisation = async (req, res) => {
   }
 };
 
+
+
 export const get_all_users = async (req, res) => {
   try {
     const users = await User.find({ organisationId: req.user.organisation })
@@ -148,6 +150,8 @@ export const get_all_users = async (req, res) => {
       .json({ message: "Could not fetch users. Please try again later." });
   }
 };
+
+
 
 export const verifyOTP = async (req, res) => {
   const { email, otp } = req.body;
