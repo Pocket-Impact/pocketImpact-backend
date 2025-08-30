@@ -16,12 +16,13 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 6. **Middleware**
 7. **Models & Enums**
 8. **Dashboard**
-9. **Utilities**
-10. **Database Connection**
-11. **CORS & Cookie Configuration**
-12. **Rate Limiting & Security**
-13. **Error Handling**
-14. **Deployment Considerations**
+9. **Reports**
+10. **Utilities**
+11. **Database Connection**
+12. **CORS & Cookie Configuration**
+13. **Rate Limiting & Security**
+14. **Error Handling**
+15. **Deployment Considerations**
 
 ---
 
@@ -1028,6 +1029,244 @@ Authorization: Bearer <token>
   "status": "error",
   "message": "Failed to fetch dashboard data",
   "error": "Error details"
+}
+```
+
+---
+
+## 9. Reports
+
+The Reports API provides comprehensive analytics and reporting capabilities for organisations to gain insights into their surveys, responses, feedback, and user activities.
+
+### Get Survey Reports – `GET /api/reports/surveys` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Query Parameters:**  
+- `startDate` (optional): Start date for filtering (ISO format: YYYY-MM-DD)
+- `endDate` (optional): End date for filtering (ISO format: YYYY-MM-DD)
+- `surveyId` (optional): Specific survey ID to filter by
+
+**Description:** Get comprehensive survey analytics including total counts, active surveys, average questions, and top performing surveys.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Survey reports generated successfully",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "summary": {
+      "totalSurveys": 15,
+      "activeSurveys": 12,
+      "avgQuestions": 8.5
+    },
+    "topSurveys": [
+      {
+        "_id": "survey123",
+        "title": "Customer Satisfaction",
+        "responseCount": 45
+      }
+    ],
+    "responseStats": [
+      {
+        "_id": "survey123",
+        "responseCount": 45
+      }
+    ]
+  }
+}
+```
+
+### Get Response Reports – `GET /api/reports/responses` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Query Parameters:**  
+- `startDate` (optional): Start date for filtering (ISO format: YYYY-MM-DD)
+- `endDate` (optional): End date for filtering (ISO format: YYYY-MM-DD)
+- `surveyId` (optional): Specific survey ID to filter by
+
+**Description:** Get response analytics including trends over time, sentiment analysis, and completion rates.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Response reports generated successfully",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "responseTrends": [
+      { "_id": "2024-01-01", "count": 12 },
+      { "_id": "2024-01-02", "count": 18 }
+    ],
+    "sentimentAnalysis": [
+      { "_id": "positive", "count": 25 },
+      { "_id": "neutral", "count": 8 },
+      { "_id": "negative", "count": 3 }
+    ],
+    "completionRates": [
+      {
+        "_id": "survey123",
+        "responseCount": 45,
+        "completionRate": 85.5
+      }
+    ]
+  }
+}
+```
+
+### Get Feedback Reports – `GET /api/reports/feedback` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Query Parameters:**  
+- `startDate` (optional): Start date for filtering (ISO format: YYYY-MM-DD)
+- `endDate` (optional): End date for filtering (ISO format: YYYY-MM-DD)
+- `category` (optional): Filter by feedback category
+
+**Description:** Get feedback analytics including trends, category distribution, sentiment trends, and response time analysis.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Feedback reports generated successfully",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "feedbackTrends": [
+      { "_id": "2024-01-01", "count": 5 },
+      { "_id": "2024-01-02", "count": 8 }
+    ],
+    "categoryDistribution": [
+      { "_id": "product", "count": 15 },
+      { "_id": "support", "count": 12 }
+    ],
+    "sentimentTrends": [
+      {
+        "_id": {
+          "date": "2024-01-01",
+          "sentiment": "positive"
+        },
+        "count": 8
+      }
+    ],
+    "avgResponseTime": 2.5
+  }
+}
+```
+
+### Get User Activity Reports – `GET /api/reports/users` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin only  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Query Parameters:**  
+- `startDate` (optional): Start date for filtering (ISO format: YYYY-MM-DD)
+- `endDate` (optional): End date for filtering (ISO format: YYYY-MM-DD)
+- `role` (optional): Filter by user role
+
+**Description:** Get user activity analytics including user statistics, role distribution, and activity trends.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "User activity reports generated successfully",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "userStats": {
+      "totalUsers": 25,
+      "verifiedUsers": 23,
+      "activeUsers": 18
+    },
+    "roleDistribution": [
+      { "_id": "analyst", "count": 12 },
+      { "_id": "researcher", "count": 8 },
+      { "_id": "admin", "count": 5 }
+    ],
+    "userActivity": [
+      { "_id": "2024-01-01", "newUsers": 3 },
+      { "_id": "2024-01-02", "newUsers": 1 }
+    ]
+  }
+}
+```
+
+### Get Executive Summary – `GET /api/reports/executive-summary` – `200 OK`
+**Auth:** Yes (JWT required)  
+**Role:** Admin only  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Query Parameters:**  
+- `period` (optional): Number of days to analyze (default: 30, max: 365)
+
+**Description:** Get a comprehensive executive summary with key metrics, sentiment overview, top categories, and actionable recommendations.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Executive summary generated successfully",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "period": "30 days",
+    "keyMetrics": {
+      "totalSurveys": 15,
+      "totalResponses": 89,
+      "totalFeedbacks": 23,
+      "totalUsers": 25,
+      "avgResponseRate": 85.5
+    },
+    "sentimentOverview": [
+      { "_id": "positive", "count": 15 },
+      { "_id": "neutral", "count": 6 },
+      { "_id": "negative", "count": 2 }
+    ],
+    "topCategories": [
+      { "_id": "product", "count": 8 },
+      { "_id": "support", "count": 6 }
+    ],
+    "recommendations": [
+      "Consider improving survey engagement strategies to increase response rates",
+      "Focus on addressing negative feedback to improve overall satisfaction"
+    ]
+  }
+}
+```
+
+**Query Parameter Validation:**
+- **Date Parameters:** When `startDate` is provided, `endDate` must also be provided and vice versa
+- **Date Format:** Must be in ISO format (YYYY-MM-DD)
+- **Date Logic:** `endDate` must be greater than or equal to `startDate`
+- **Period Parameter:** Must be between 1 and 365 days
+- **Category Parameter:** Must be one of: product, ux, support, pricing, features, performance, other
+- **Role Parameter:** Must be one of: admin, analyst, researcher
+
+**Error Responses:**
+```json
+{
+  "status": "error",
+  "message": "Failed to generate reports",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "errorCode": "DATABASE_ERROR"
+}
+```
+
+```json
+{
+  "status": "error",
+  "message": "Organisation ID is required",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "errorCode": "INVALID_ORGANISATION_ID"
 }
 ```
 

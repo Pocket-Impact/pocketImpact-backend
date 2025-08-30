@@ -7,12 +7,13 @@ import User from '../models/User.js';
 
 export const getDashboardData = async (req, res) => {
     try {
-        const  organisationId = req.user.organisationId;
+        const organisationId = req.user.organisationId;
         
         if (!organisationId) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Organisation ID is required'
+                message: 'Organisation ID is required',
+                timestamp: new Date().toISOString()
             });
         }
 
@@ -75,8 +76,8 @@ export const getDashboardData = async (req, res) => {
 
         // Format sentiment data with colors
         const sentimentColors = {
-            positive: '#7CCF00',
-            negative: '#FF6900',
+            positive: '#47b89b',
+            negative: '#d25871',
             neutral: '#EFB100'
         };
 
@@ -133,6 +134,8 @@ export const getDashboardData = async (req, res) => {
 
         res.json({
             status: 'success',
+            message: 'Dashboard data retrieved successfully',
+            timestamp: new Date().toISOString(),
             data: {
                 totals: {
                     surveys: totalSurveys,
@@ -151,7 +154,8 @@ export const getDashboardData = async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch dashboard data',
-            error: error.message
+            error: error.message,
+            timestamp: new Date().toISOString()
         });
     }
 };
@@ -216,6 +220,8 @@ export const getOrganisationData = async (req, res) => {
 
         res.json({
             status: 'success',
+            message: 'Organisation data retrieved successfully',
+            timestamp: new Date().toISOString(),
             data: {
                 organisationName: organisation.organisationName,
                 organisationCountry: organisation.organisationCountry,
@@ -232,7 +238,8 @@ export const getOrganisationData = async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch organisation data',
-            error: error.message
+            error: error.message,
+            timestamp: new Date().toISOString()
         });
     }
 };

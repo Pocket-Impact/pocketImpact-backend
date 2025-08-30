@@ -6,6 +6,7 @@ import surveyRoutes from './routes/surveyRoutes.js';
 import dotenv from 'dotenv';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import reportsRoutes from './routes/reportsRoutes.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
@@ -45,6 +46,7 @@ app.use('/api/surveys', surveyRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/feedbacks', feedbackRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/reports', reportsRoutes);
 app.get('/', (req, res) => {
     res.json(
         {

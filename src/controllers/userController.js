@@ -4,27 +4,46 @@ import generatingPassword from "../utils/generatePassword.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
 export const add_user_to_organisation = async (req, res) => {
-  const generatedPassword = generatingPassword();
-  const { fullname, phonenumber, email, role } = req.body;
   try {
+    const { fullname, phonenumber, email, role } = req.body;
+    
     if (!fullname || !email || !role || !phonenumber) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ 
+        status: 'fail',
+        message: "All fields are required",
+        timestamp: new Date().toISOString()
+      });
     }
+    
+    const generatedPassword = generatingPassword();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
+      return res.status(400).json({ 
+        status: 'fail',
+        message: "Invalid email format",
+        timestamp: new Date().toISOString()
+      });
     }
+    
     const phoneRegex = /^\+?[1-9]\d{1,14}$/;
     if (!phoneRegex.test(phonenumber)) {
-      return res.status(400).json({ message: "Invalid phone number format" });
+      return res.status(400).json({ 
+        status: 'fail',
+        message: "Invalid phone number format",
+        timestamp: new Date().toISOString()
+      });
     }
 
     const existingUser = await User.findOne({
       email,
     });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ 
+        status: 'fail',
+        message: "Email already exists",
+        timestamp: new Date().toISOString()
+      });
     }
     const user = new User({
       fullname,
