@@ -18,6 +18,10 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 8. **Dashboard**
 9. **Utilities**
 10. **Database Connection**
+11. **CORS & Cookie Configuration**
+12. **Rate Limiting & Security**
+13. **Error Handling**
+14. **Deployment Considerations**
 
 ---
 
@@ -64,7 +68,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 
 ### Login – `POST /api/auth/login` – `200 OK`
 **Auth:** No  
-**Description:** Login with email and password. Returns access and refresh tokens.  
+**Description:** Login with email and password. Returns access and refresh tokens as HTTP-only cookies.  
 **Request Body:**  
 ```json
 {
@@ -84,13 +88,16 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
       "email": "jane@example.com",
       "role": "admin",
       "isVerified": true,
-      "phonenumber": "+1234567890",
-      "organisationId": "orgId",
-      "organisationName": "Acme Corp"
+      "organisationName": "Acme Corp",
+      "organisationId": "orgId"
     }
   }
 }
 ```
+**Cookies Set:**
+- `accessToken`: JWT access token (1 hour expiry, HTTP-only)
+- `refreshToken`: JWT refresh token (7 days expiry, HTTP-only)
+
 **Error Response:**  
 ```json
 {
@@ -98,32 +105,36 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
   "message": "Email and password are required"
 }
 ```
-**Status Codes:** `200 OK`, `400 Bad Request`
+**Status Codes:** `200 OK`, `400 Bad Request`, `401 Unauthorized`
+
+**Note:** Cookies are automatically sent with subsequent requests when using `credentials: 'include'` in frontend requests.
 
 ### Refresh Token – `POST /api/auth/refresh-token` – `200 OK`
-**Auth:** No (requires valid refresh token)  
-**Description:** Use a valid refresh token (from cookie or request body) to obtain a new access token.  
-**Request Body:**  
-```json
-{
-  "refreshToken": "..." // optional, can also be sent as a cookie
-}
-```
+**Auth:** No (requires valid refresh token cookie)  
+**Description:** Use a valid refresh token from cookies to obtain a new access token.  
+**Cookies Required:** `refreshToken` (automatically sent with request)  
+**Request Body:** None required (token is read from cookies)
+
 **Success Response:**  
 ```json
 {
   "status": "success",
-  "accessToken": "..."
+  "message": "Token refreshed"
 }
 ```
+**Cookies Updated:**
+- `accessToken`: New JWT access token (15 minutes expiry, HTTP-only)
+
 **Error Response:**  
 ```json
 {
   "status": "fail",
-  "message": "Invalid or expired refresh token."
+  "message": "Refresh token missing"
 }
 ```
-**Status Codes:** `200 OK`, `401 Unauthorized`
+**Status Codes:** `200 OK`, `401 Unauthorized`, `403 Forbidden`
+
+**Note:** This endpoint automatically reads the refresh token from cookies. No need to send it in the request body.
 
 ### Verify OTP – `POST /api/auth/verify-otp` – `200 OK`
 **Auth:** Yes (JWT required)  
@@ -268,15 +279,61 @@ Authorization: Bearer <token>
 
 ### Logout – `GET /api/auth/logout` – `200 OK`
 **Auth:** No  
-**Description:** Log out the current user (clears JWT cookies).  
+**Description:** Log out the current user by clearing JWT cookies.  
 **Success Response:**  
 ```json
 {
   "status": "success",
-  "message": "Logged out successfully."
+  "message": "Logout successful"
 }
 ```
+**Cookies Cleared:**
+- `accessToken`: Removed
+- `refreshToken`: Removed
+
 **Status Codes:** `200 OK`
+
+**Note:** This endpoint clears both access and refresh token cookies, effectively logging the user out.
+
+---
+
+### Authentication Flow
+
+The API uses a cookie-based authentication system with automatic token refresh:
+
+1. **Login** → Sets `accessToken` (1 hour) and `refreshToken` (7 days) as HTTP-only cookies
+2. **API Requests** → Include `Authorization: Bearer <token>` header (token from cookies)
+3. **Token Refresh** → Automatically refresh access token using refresh token cookie
+4. **Logout** → Clear both cookies
+
+**Frontend Implementation:**
+```javascript
+// Login
+const response = await fetch('/api/auth/login', {
+  method: 'POST',
+  credentials: 'include',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+});
+
+// Protected API calls
+const data = await fetch('/api/users/profile', {
+  credentials: 'include', // Required for cookies
+  headers: { 'Content-Type': 'application/json' }
+});
+
+// Logout
+await fetch('/api/auth/logout', {
+  method: 'GET',
+  credentials: 'include'
+});
+```
+
+**Token Expiry Handling:**
+- Access tokens expire after 1 hour
+- Refresh tokens expire after 7 days
+- Use `/api/auth/refresh-token` to get new access token
+- Frontend should handle 401 responses by attempting token refresh
 
 ---
 
@@ -330,20 +387,32 @@ Authorization: Bearer <token>
 ```http
 Authorization: Bearer <token>
 ```
-**Description:** Get all users in the current organisation.  
+**Description:** Get all users in the current organisation with their organisation details populated.  
 **Success Response:**  
 ```json
 {
   "status": "success",
-  "data": [
-    {
-      "id": "userId",
-      "fullname": "John Smith",
-      "email": "john@example.com",
-      "role": "analyst"
-    }
-    // ...
-  ]
+  "message": "Users fetched successfully",
+  "data": {
+    "users": [
+      {
+        "_id": "userId",
+        "fullname": "John Smith",
+        "email": "john@example.com",
+        "phonenumber": "+1234567890",
+        "role": "analyst",
+        "organisationId": "org123",
+        "organisation": {
+          "organisationName": "Acme Corp",
+          "organisationCountry": "USA",
+          "organisationSize": "100-500"
+        },
+        "isVerified": true,
+        "createdAt": "2025-01-01T00:00:00.000Z",
+        "updatedAt": "2025-01-01T00:00:00.000Z"
+      }
+    ]
+  }
 }
 ```
 **Status Codes:** `200 OK`, `500 Internal Server Error`
@@ -839,6 +908,7 @@ Authorization: Bearer <token>
 - `otpExpires` (Date)
 - `resetPasswordToken` (string)
 - `resetPasswordExpires` (Date)
+- `organisation` (virtual field, populated with Organisation details)
 
 ### Organisation
 - `organisationName` (string, required, unique)
@@ -1013,10 +1083,15 @@ Required environment variables:
 - `SENDGRID_API_KEY` - SendGrid API key for emails
 - `SENDGRID_SENDER_EMAIL` - Verified sender email address for SendGrid
 - `CLIENT_URL` - Frontend URL for CORS
+- `NODE_ENV` - Environment mode (development/production)
+- `COOKIE_DOMAIN` - Cookie domain for production (optional, for cross-subdomain cookies)
 - `HF_TOKEN` - HuggingFace API token for sentiment analysis (optional)
 
 **Example .env file:**
 ```env
+# Environment
+NODE_ENV=production
+
 # Database
 DATABASE_URL=mongodb://localhost:27017/pocket-impact
 # or MONGO_URI=mongodb://localhost:27017/pocket-impact
@@ -1029,8 +1104,9 @@ REFRESH_TOKEN_SECRET=your_refresh_token_secret_here
 SENDGRID_API_KEY=your_sendgrid_api_key_here
 SENDGRID_SENDER_EMAIL=your_verified_email@domain.com
 
-# Frontend
-CLIENT_URL=http://localhost:3000
+# Frontend & CORS
+CLIENT_URL=https://pocket-impact.netlify.app
+COOKIE_DOMAIN=.yourdomain.com  # Optional: for cross-subdomain cookies
 
 # AI Services (Optional)
 HF_TOKEN=your_huggingface_token_here
@@ -1047,24 +1123,84 @@ All API endpoints are prefixed with `/api/`
 
 ---
 
-## 15. Rate Limiting & Security
+## 15. CORS & Cookie Configuration
 
-- JWT-based authentication with refresh tokens
-- Role-based access control (RBAC)
-- Input validation using Joi schemas
-- CORS enabled with configurable origins
-- Password hashing with bcrypt
-- OTP verification for user registration
-- Secure password reset flow
+### CORS Settings
+The API is configured with CORS to allow cross-origin requests from authorized domains:
 
-**Note:** The current implementation has some environment variable inconsistencies that should be addressed:
-- JWT secrets use `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` in code but documentation previously referenced `JWT_SECRET`
-- Database connection prioritizes `DATABASE_URL` over `MONGO_URI`
-- HuggingFace API uses `HF_TOKEN` instead of `HUGGINGFACE_API_KEY`
+```javascript
+app.use(cors({
+    origin: [
+        process.env.CLIENT_URL || 'http://localhost:3000',
+        'https://pocket-impact.netlify.app',
+        'https://pocket-impact.netlify.app/',
+        'https://pocket-impact.netlify.app/*'
+    ],
+    credentials: true, // Allow cookies to be sent with requests
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cookie'],
+    exposedHeaders: ['Set-Cookie'],
+    preflightContinue: false,
+    optionsSuccessStatus: 200
+}));
+```
+
+### Cookie Configuration
+Authentication tokens are stored as HTTP-only cookies for security:
+
+**Production Environment:**
+- `sameSite: 'None'` - Allows cross-origin cookies (required for frontend/backend on different domains)
+- `secure: true` - HTTPS only
+- `httpOnly: true` - Prevents XSS attacks
+
+**Development Environment:**
+- `sameSite: 'Strict'` - Local development security
+- `secure: false` - HTTP allowed for localhost
+
+### Frontend Requirements
+To work with the cookie-based authentication:
+
+```javascript
+// For fetch requests
+fetch('/api/auth/login', {
+  method: 'POST',
+  credentials: 'include', // Required for cookies
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+});
+
+// For axios
+axios.defaults.withCredentials = true;
+// or per request
+axios.post('/api/auth/login', { email, password }, { withCredentials: true });
+```
+
+**Supported Frontend Domains:**
+- `http://localhost:3000` (development)
+- `https://pocket-impact.netlify.app` (production)
 
 ---
 
-## 16. Error Handling
+## 16. Rate Limiting & Security
+
+- JWT-based authentication with refresh tokens stored as HTTP-only cookies
+- Role-based access control (RBAC)
+- Input validation using Joi schemas
+- CORS enabled with configurable origins and credentials support
+- Password hashing with bcrypt
+- OTP verification for user registration
+- Secure password reset flow
+- Cross-origin cookie support for production deployments
+
+**Security Features:**
+- HTTP-only cookies prevent XSS attacks
+- Secure cookies in production (HTTPS only)
+- Configurable CORS origins for production and development
+- Automatic token refresh via secure cookies
+
+---
+
+## 17. Error Handling
 
 All API endpoints return consistent error responses:
 ```json
@@ -1081,3 +1217,58 @@ Common HTTP status codes:
 - `401` - Unauthorized
 - `404` - Not Found
 - `500` - Internal Server Error
+
+---
+
+## 18. Deployment Considerations
+
+### Production Environment Setup
+
+**Required Environment Variables:**
+```bash
+NODE_ENV=production
+CLIENT_URL=https://pocket-impact.netlify.app
+ACCESS_TOKEN_SECRET=your_secure_secret_here
+REFRESH_TOKEN_SECRET=your_secure_refresh_secret_here
+```
+
+**Cookie Configuration for Cross-Origin:**
+- `sameSite: 'None'` is automatically set for production
+- `secure: true` ensures HTTPS-only cookies
+- Frontend must use `credentials: 'include'` for all requests
+
+### Render Deployment
+When deploying to Render:
+
+1. **Set Environment Variables:**
+   - `NODE_ENV=production`
+   - `CLIENT_URL=https://pocket-impact.netlify.app`
+   - All required secrets and database URLs
+
+2. **CORS Configuration:**
+   - Frontend domain is automatically allowed
+   - Credentials are enabled for cookie support
+
+3. **Health Check:**
+   - Root endpoint `/` returns API status
+   - Use for deployment health checks
+
+### Frontend Integration
+Your Netlify frontend must:
+
+1. **Include Credentials:**
+   ```javascript
+   // All API calls must include credentials
+   fetch('https://pocketimpact-backend-9749.onrender.com/api/auth/login', {
+     credentials: 'include',
+     // ... other options
+   });
+   ```
+
+2. **Handle CORS:**
+   - Backend automatically handles CORS preflight
+   - Cookies are automatically sent with requests
+
+3. **Error Handling:**
+   - Handle 401 responses (token expired)
+   - Implement automatic token refresh logic

@@ -27,8 +27,7 @@ const userSchema = new mongoose.Schema({
         validate: {
             validator: function (v) {
                 return /^\+?[1-9]\d{1,14}$/.test(v);
-            }
-            ,
+            },
             message: props => `${props.value} is not a valid phone number!`
         }
     },
@@ -40,9 +39,8 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-          enum: [roles.ADMIN, roles.ANALYST, roles.RESEARCHER],
-
-        default: 'user',
+        enum: [roles.ADMIN, roles.ANALYST, roles.RESEARCHER],
+        default: roles.RESEARCHER,
     },
     password: {
         type: String,
@@ -64,7 +62,18 @@ const userSchema = new mongoose.Schema({
 
 }, {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
+
+// Virtual for organisation
+userSchema.virtual('organisation', {
+    ref: 'Organisation',
+    localField: 'organisationId',
+    foreignField: '_id',
+    justOne: true
+});
+
 userSchema.pre('save', async function (next) {
     if (this.isModified('password')) {
         const salt = await bcrypt.genSalt(10);

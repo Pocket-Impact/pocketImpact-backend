@@ -26,6 +26,8 @@ app.use(cors({
     preflightContinue: false,
     optionsSuccessStatus: 200
 }));
+console.log("NODE_ENV:", process.env.NODE_ENV);
+
 
 
 

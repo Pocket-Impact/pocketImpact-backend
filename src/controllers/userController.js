@@ -135,14 +135,14 @@ export const add_user_to_organisation = async (req, res) => {
 
 export const get_all_users = async (req, res) => {
     try {
-        const users = await User.find({ organisationId: req.user.organisationId }).populate('organisation').select('-password -__v');
+        const users = await User.find({ organisationId: req.user.organisationId }).populate('organisation', 'organisationName organisationCountry organisationSize').select('-password -__v');
         res.status(200).json({
           status: "success",
           message: "Users fetched successfully",
           data: { users }
         });
     } catch (error) {
-        console.error("Error fetching users:", error);
+        console.log("Error fetching users:", error);
         res.status(500).json({ message: "Could not fetch users. Please try again later." });
     }
 };
