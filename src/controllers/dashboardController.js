@@ -243,3 +243,251 @@ export const getOrganisationData = async (req, res) => {
         });
     }
 };
+/* 
+info to return
+{
+  "status": "success",
+  "data": {
+    "totals": {
+      "surveys": Number,
+      "feedbacks": Number,
+      "responses": Number
+    },
+    "overviewCards": [
+      {
+        "title": String,
+        "value": Number,
+        "increase": Number // e.g. percentage or count change
+      }
+    ],
+    "dailyFeedbacks": [
+      {
+        "date": String, // ISO date
+        "Feedbacks": Number
+      }
+    ],
+    "sentiment": {
+      "positive": Number,
+      "neutral": Number,
+      "negative": Number
+    },
+    "topTopics": [
+      {
+        "category": String,
+        "count": Number, // percentage or count
+        "feedbacks": Number // optional
+      }
+    ],
+    "recentFeedbacks": [
+      {
+        "message": String,
+        "date": String, // ISO date
+        "sentiment": String // "positive", "neutral", "negative"
+      }
+    ]
+  }
+}
+
+*/
+export const analyticsData = async (req, res) => {
+
+    try {
+        const organisationId = req.user.organisationId;
+        
+        if (!organisationId) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Organisation ID is required',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Get current totals
+        const [totalSurveys, totalResponses, totalFeedbacks] = await Promise.all([
+            Survey.countDocuments({ organisationId }),
+            Response.countDocuments({ organisationId }),
+            Feedback.countDocuments({ organisationId })
+        ]);
+
+        // Calculate previous period totals for growth comparison (last 30 days vs previous 30 days)
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+        const [prevSurveys, prevResponses, prevFeedbacks] = await Promise.all([
+            Survey.countDocuments({ 
+                organisationId, 
+                createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } 
+            }),
+            Response.countDocuments({ 
+                organisationId, 
+                createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } 
+            }),
+            Feedback.countDocuments({ 
+                organisationId, 
+                createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } 
+            })
+        ]);
+
+        // Calculate growth percentages
+        const calculateGrowth = (current, previous) => {
+            if (previous === 0) return current > 0 ? 100 : 0;
+            return Math.round(((current - previous) / previous) * 100);
+        };
+
+        // Create overview cards
+        const overviewCards = [
+            {
+                title: "Total Surveys",
+                value: totalSurveys,
+                increase: calculateGrowth(totalSurveys, prevSurveys)
+            },
+            {
+                title: "Total Responses",
+                value: totalResponses,
+                increase: calculateGrowth(totalResponses, prevResponses)
+            },
+            {
+                title: "Total Feedbacks",
+                value: totalFeedbacks,
+                increase: calculateGrowth(totalFeedbacks, prevFeedbacks)
+            }
+        ];
+
+        // Get daily feedbacks for the last 7 days
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        const dailyFeedbacks = await Feedback.aggregate([
+            {
+                $match: {
+                    organisationId: new mongoose.Types.ObjectId(organisationId),
+                    createdAt: { $gte: sevenDaysAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$createdAt"
+                        }
+                    },
+                    Feedbacks: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        // Fill in missing dates with 0 feedbacks
+        const formattedDailyFeedbacks = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            const dateString = date.toISOString().split('T')[0];
+            const found = dailyFeedbacks.find(item => item._id === dateString);
+            formattedDailyFeedbacks.push({
+                date: dateString,
+                Feedbacks: found ? found.Feedbacks : 0
+            });
+        }
+
+        // Get sentiment analysis
+        const sentimentData = await Feedback.aggregate([
+            {
+                $match: {
+                    organisationId: new mongoose.Types.ObjectId(organisationId),
+                    sentiment: { $ne: null }
+                }
+            },
+            {
+                $group: {
+                    _id: "$sentiment",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Format sentiment data
+        const sentiment = {
+            positive: 0,
+            neutral: 0,
+            negative: 0
+        };
+
+        sentimentData.forEach(item => {
+            if (sentiment.hasOwnProperty(item._id)) {
+                sentiment[item._id] = item.count;
+            }
+        });
+
+        // Get top topics
+        const topTopics = await Feedback.aggregate([
+            {
+                $match: {
+                    organisationId: new mongoose.Types.ObjectId(organisationId),
+                    category: { $ne: null }
+                }
+            },
+            {
+                $group: {
+                    _id: "$category",
+                    count: { $sum: 1 },
+                    feedbacks: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { count: -1 }
+            },
+            {
+                $limit: 5
+            }
+        ]);
+
+        const formattedTopTopics = topTopics.map(topic => ({
+            category: topic._id.charAt(0).toUpperCase() + topic._id.slice(1),
+            count: topic.count,
+            feedbacks: topic.feedbacks
+        }));
+
+        // Get recent feedbacks
+        const recentFeedbacks = await Feedback.find({
+            organisationId: organisationId
+        })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('message sentiment createdAt')
+        .lean();
+
+        const formattedRecentFeedbacks = recentFeedbacks.map(feedback => ({
+            message: feedback.message,
+            date: feedback.createdAt.toISOString(),
+            sentiment: feedback.sentiment || 'neutral'
+        }));
+
+        res.json({
+            status: "success",
+            data: {
+                totals: {
+                    surveys: totalSurveys,
+                    feedbacks: totalFeedbacks,
+                    responses: totalResponses
+                },
+                overviewCards,
+                dailyFeedbacks: formattedDailyFeedbacks,
+                sentiment,
+                topTopics: formattedTopTopics,
+                recentFeedbacks: formattedRecentFeedbacks
+            }
+        });
+
+    } catch (error) {
+        console.error('Analytics data error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch analytics data',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+};

@@ -89,7 +89,8 @@ export const SUCCESS_MESSAGES = {
     RESPONSE_REPORTS: 'Response reports generated successfully',
     FEEDBACK_REPORTS: 'Feedback reports generated successfully',
     USER_REPORTS: 'User activity reports generated successfully',
-    EXECUTIVE_SUMMARY: 'Executive summary generated successfully'
+    EXECUTIVE_SUMMARY: 'Executive summary generated successfully',
+    COMPREHENSIVE_REPORTS: 'Comprehensive reports generated successfully'
 };
 
 // Error messages

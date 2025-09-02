@@ -16,7 +16,7 @@ Pocket Impact is a Node.js/Express REST API for managing users, organisations, s
 6. **Middleware**
 7. **Models & Enums**
 8. **Dashboard**
-9. **Reports**
+9. **Reports** ⭐ *Updated with Comprehensive Analytics*
 10. **Utilities**
 11. **Database Connection**
 12. **CORS & Cookie Configuration**
@@ -1038,6 +1038,223 @@ Authorization: Bearer <token>
 
 The Reports API provides comprehensive analytics and reporting capabilities for organisations to gain insights into their surveys, responses, feedback, and user activities.
 
+### 🎯 **Quick Start - Comprehensive Reports**
+
+For complete analytics in one call, use the **Comprehensive Reports** endpoint:
+
+```bash
+GET /api/reports/comprehensive?startDate=2024-01-01&endDate=2024-01-31
+```
+
+This single endpoint provides:
+- **KPIs**: Engagement, growth, and quality metrics
+- **Survey Analytics**: Creation trends, question types, performance
+- **Response Analytics**: Trends, completion rates, sentiment analysis
+- **Feedback Analytics**: Category distribution, sentiment trends
+- **User Analytics**: Activity, role distribution, engagement
+- **Trending Categories**: Growth rates and trend analysis
+- **Smart Insights**: AI-generated recommendations and insights
+
+### 📊 **Available Endpoints**
+
+1. **`/comprehensive`** ⭐ - Complete analytics dashboard (NEW)
+2. **`/surveys`** - Detailed survey analytics
+3. **`/responses`** - Response trends and analysis
+4. **`/feedback`** - Feedback category and sentiment analysis
+5. **`/users`** - User activity and engagement (Admin only)
+6. **`/executive-summary`** - High-level KPIs and recommendations (Admin only)
+7. **`/health`** - Service health check
+
+### Get Comprehensive Reports – `GET /api/reports/comprehensive` – `200 OK` ⭐ **NEW**
+**Auth:** Yes (JWT required)  
+**Role:** Admin, Analyst  
+**Headers:**  
+```http
+Authorization: Bearer <token>
+```
+**Query Parameters:**  
+- `startDate` (required): Start date for filtering (ISO format: YYYY-MM-DD)
+- `endDate` (required): End date for filtering (ISO format: YYYY-MM-DD)
+
+**Description:** Get comprehensive analytics for a specific date range including surveys, responses, feedback, users, trending categories, and actionable insights. This endpoint provides everything you need in one call for complete period analysis.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Comprehensive reports generated successfully",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "data": {
+    "period": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-01-31",
+      "duration": 31
+    },
+    "kpis": {
+      "engagement": {
+        "responseRate": 85.5,
+        "completionRate": 78.2,
+        "feedbackRate": 92.0
+      },
+      "growth": {
+        "surveyGrowth": 15,
+        "responseGrowth": 120,
+        "feedbackGrowth": 45,
+        "userGrowth": 8
+      },
+      "quality": {
+        "avgQuestionsPerSurvey": 5.2,
+        "avgResponseTime": 2.3,
+        "sentimentScore": 0.3,
+        "userVerificationRate": 95.0
+      }
+    },
+    "surveyAnalytics": {
+      "summary": {
+        "totalSurveys": 15,
+        "activeSurveys": 12,
+        "avgQuestions": 5.2,
+        "totalQuestions": 78
+      },
+      "trends": [
+        { "date": "2024-01-01", "count": 2 },
+        { "date": "2024-01-02", "count": 3 }
+      ],
+      "questionTypes": [
+        { "type": "text", "count": 45 },
+        { "type": "rating", "count": 23 },
+        { "type": "choice", "count": 10 }
+      ]
+    },
+    "responseAnalytics": {
+      "summary": {
+        "totalResponses": 120,
+        "avgResponseTime": 2.3,
+        "totalAnswers": 456
+      },
+      "trends": [
+        { "date": "2024-01-01", "count": 8 },
+        { "date": "2024-01-02", "count": 12 }
+      ],
+      "completionRates": [
+        {
+          "_id": "survey123",
+          "title": "Customer Satisfaction",
+          "responseCount": 45,
+          "completionRate": 85.5,
+          "questionCount": 5
+        }
+      ],
+      "sentimentAnalysis": [
+        { "sentiment": "positive", "count": 65 },
+        { "sentiment": "neutral", "count": 35 },
+        { "sentiment": "negative", "count": 20 }
+      ]
+    },
+    "feedbackAnalytics": {
+      "summary": {
+        "totalFeedbacks": 45,
+        "avgSentimentScore": 0.3
+      },
+      "trends": [
+        { "date": "2024-01-01", "count": 3 },
+        { "date": "2024-01-02", "count": 5 }
+      ],
+      "categoryDistribution": [
+        {
+          "category": "Product",
+          "count": 15,
+          "percentage": 33.3
+        },
+        {
+          "category": "Support",
+          "count": 12,
+          "percentage": 26.7
+        }
+      ],
+      "sentimentTrends": [
+        {
+          "_id": {
+            "date": "2024-01-01",
+            "sentiment": "positive"
+          },
+          "count": 8
+        }
+      ]
+    },
+    "userAnalytics": {
+      "summary": {
+        "totalUsers": 25,
+        "verifiedUsers": 23,
+        "activeUsers": 18,
+        "verificationRate": 92.0,
+        "activityRate": 72.0
+      },
+      "activity": [
+        { "date": "2024-01-01", "newUsers": 2 },
+        { "date": "2024-01-02", "newUsers": 1 }
+      ],
+      "roleDistribution": [
+        { "role": "analyst", "count": 12 },
+        { "role": "researcher", "count": 8 },
+        { "role": "admin", "count": 5 }
+      ]
+    },
+    "trendingCategories": [
+      {
+        "category": "Product",
+        "currentCount": 15,
+        "previousCount": 10,
+        "growthRate": 50.0,
+        "trend": "rising"
+      },
+      {
+        "category": "Support",
+        "currentCount": 12,
+        "previousCount": 15,
+        "growthRate": -20.0,
+        "trend": "falling"
+      }
+    ],
+    "sentimentOverview": [
+      { "sentiment": "positive", "count": 85 },
+      { "sentiment": "neutral", "count": 45 },
+      { "sentiment": "negative", "count": 25 }
+    ],
+    "topPerformingSurveys": [
+      {
+        "_id": "survey123",
+        "title": "Customer Satisfaction",
+        "description": "Monthly satisfaction survey",
+        "responseCount": 45,
+        "completionRate": 85.5,
+        "questionCount": 5,
+        "createdAt": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "insights": [
+      {
+        "type": "survey",
+        "title": "Survey Activity",
+        "message": "15 surveys created with an average of 5 questions each",
+        "priority": "info"
+      },
+      {
+        "type": "trending",
+        "title": "Rising Trend",
+        "message": "Product feedback is trending up with 50% growth",
+        "priority": "success"
+      },
+      {
+        "type": "sentiment",
+        "title": "Positive Sentiment",
+        "message": "Overall sentiment is positive with more positive than negative feedback",
+        "priority": "success"
+      }
+    ]
+  }
+}
+```
+
 ### Get Survey Reports – `GET /api/reports/surveys` – `200 OK`
 **Auth:** Yes (JWT required)  
 **Role:** Admin, Analyst  
@@ -1243,13 +1460,57 @@ Authorization: Bearer <token>
 }
 ```
 
+**Usage Examples:**
+
+```bash
+# Get comprehensive analytics for January 2024
+GET /api/reports/comprehensive?startDate=2024-01-01&endDate=2024-01-31
+
+# Get survey analytics for a specific period
+GET /api/reports/surveys?startDate=2024-01-01&endDate=2024-01-31
+
+# Get response analytics for a specific survey
+GET /api/reports/responses?surveyId=survey123&startDate=2024-01-01&endDate=2024-01-31
+
+# Get feedback analytics for a specific category
+GET /api/reports/feedback?category=product&startDate=2024-01-01&endDate=2024-01-31
+
+# Get user analytics for a specific role
+GET /api/reports/users?role=analyst&startDate=2024-01-01&endDate=2024-01-31
+
+# Get executive summary for last 60 days
+GET /api/reports/executive-summary?period=60
+```
+
 **Query Parameter Validation:**
+- **Comprehensive Reports:** Both `startDate` and `endDate` are required
 - **Date Parameters:** When `startDate` is provided, `endDate` must also be provided and vice versa
 - **Date Format:** Must be in ISO format (YYYY-MM-DD)
 - **Date Logic:** `endDate` must be greater than or equal to `startDate`
 - **Period Parameter:** Must be between 1 and 365 days
 - **Category Parameter:** Must be one of: product, ux, support, pricing, features, performance, other
 - **Role Parameter:** Must be one of: admin, analyst, researcher
+
+### Get Reports Health Check – `GET /api/reports/health` – `200 OK`
+**Auth:** No  
+**Description:** Health check endpoint for the reports service that returns service status and available endpoints.  
+**Success Response:**  
+```json
+{
+  "status": "success",
+  "message": "Reports service is running",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "version": "1.0.0",
+  "endpoints": [
+    "GET /comprehensive - Complete analytics dashboard",
+    "GET /surveys - Survey analytics",
+    "GET /responses - Response analytics", 
+    "GET /feedback - Feedback analytics",
+    "GET /users - User analytics",
+    "GET /executive-summary - Executive summary"
+  ]
+}
+```
 
 **Error Responses:**
 ```json
@@ -1267,6 +1528,15 @@ Authorization: Bearer <token>
   "message": "Organisation ID is required",
   "timestamp": "2024-01-15T10:30:00.000Z",
   "errorCode": "INVALID_ORGANISATION_ID"
+}
+```
+
+```json
+{
+  "status": "error",
+  "message": "Start date and end date are required",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "errorCode": "VALIDATION_ERROR"
 }
 ```
 
