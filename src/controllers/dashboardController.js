@@ -54,7 +54,7 @@ export const getDashboardData = async (req, res) => {
             const found = dailyFeedbacks.find(item => item._id === index + 1);
             return {
                 day: day,
-                Feedbacks: found ? found.count : 0
+                Feedbacks: found ? found.count : 0,
             };
         });
 
@@ -289,6 +289,99 @@ info to return
 }
 
 */
+export const getDailyCategoriesData = async (req, res) => {
+    try {
+        const organisationId = req.user.organisationId;
+        
+        if (!organisationId) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Organisation ID is required',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Get feedbacks for the last 7 days grouped by day and category
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        const dailyCategoriesData = await Feedback.aggregate([
+            {
+                $match: {
+                    organisationId: new mongoose.Types.ObjectId(organisationId),
+                    createdAt: { $gte: sevenDaysAgo },
+                    category: { $ne: null }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        dayOfWeek: { $dayOfWeek: "$createdAt" },
+                        category: "$category"
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id.dayOfWeek": 1 }
+            }
+        ]);
+
+        // Define day names (MongoDB returns 1=Sunday, 2=Monday, etc.)
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const categories = [
+            "Product",
+            "Ux",
+            "Support",
+            "Pricing",
+            "Features",
+            "Performance",
+            "Other"
+        ]
+        
+        // Initialize the result array with all days
+        const result = [];
+        
+        // Process each day of the week (Monday to Sunday)
+        for (let dayIndex = 1; dayIndex <= 7; dayIndex++) {
+            const dayName = dayNames[dayIndex - 1];
+            const dayData = { day: dayName };
+            
+            // Initialize all categories with 0
+            categories.forEach(category => {
+                dayData[category] = 0;
+            });
+            
+            // Find data for this day
+            const dayFeedbacks = dailyCategoriesData.filter(item => item._id.dayOfWeek === dayIndex);
+            
+            // Fill in the counts for each category
+            dayFeedbacks.forEach(feedback => {
+                const category = feedback._id.category.charAt(0).toUpperCase() + feedback._id.category.slice(1);
+                if (categories.includes(category)) {
+                    dayData[category] = feedback.count;
+                }
+            });
+            
+            result.push(dayData);
+        }
+
+        res.json({
+            status: "success",
+            data: result
+        });
+
+    } catch (error) {
+        console.error('Daily categories data error:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to fetch daily categories data',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+};
+
 export const analyticsData = async (req, res) => {
 
     try {
