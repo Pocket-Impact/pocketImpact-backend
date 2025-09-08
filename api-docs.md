@@ -987,17 +987,19 @@ Authorization: Bearer <token>
   "data": {
     "totals": {
       "surveys": 15,
+      "surveysGrowthPercentage": 12,
       "responses": 89,
+      "responsesGrowthPercentage": -5,
       "feedbacks": 23
     },
     "dailyFeedbacks": [
-      { "day": "Mon", "Feedbacks": 2 },
-      { "day": "Tue", "Feedbacks": 5 },
-      { "day": "Wed", "Feedbacks": 3 },
-      { "day": "Thu", "Feedbacks": 7 },
-      { "day": "Fri", "Feedbacks": 4 },
-      { "day": "Sat", "Feedbacks": 6 },
-      { "day": "Sun", "Feedbacks": 1 }
+      { "day": "Mon", "Feedbacks": 2, "GrowthPercentage": 0 },
+      { "day": "Tue", "Feedbacks": 5, "GrowthPercentage": 150 },
+      { "day": "Wed", "Feedbacks": 3, "GrowthPercentage": -40 },
+      { "day": "Thu", "Feedbacks": 7, "GrowthPercentage": 133 },
+      { "day": "Fri", "Feedbacks": 4, "GrowthPercentage": -43 },
+      { "day": "Sat", "Feedbacks": 6, "GrowthPercentage": 50 },
+      { "day": "Sun", "Feedbacks": 1, "GrowthPercentage": -83 }
     ],
     "sentimentAnalysis": [
       { "name": "Positive", "value": 2, "color": "#7CCF00" },
@@ -1005,11 +1007,11 @@ Authorization: Bearer <token>
       { "name": "Neutral", "value": 6, "color": "#EFB100" }
     ],
     "topTopics": [
-      { "category": "Product", "percentage": 35 },
-      { "category": "Support", "percentage": 26 },
-      { "category": "Ux", "percentage": 17 },
-      { "category": "Features", "percentage": 13 },
-      { "category": "Performance", "percentage": 9 }
+      { "category": "Product", "count": 12, "percentage": 35, "feedbacks": 12 },
+      { "category": "Support", "count": 9, "percentage": 26, "feedbacks": 9 },
+      { "category": "Ux", "count": 6, "percentage": 17, "feedbacks": 6 },
+      { "category": "Features", "count": 4, "percentage": 13, "feedbacks": 4 },
+      { "category": "Performance", "count": 3, "percentage": 9, "feedbacks": 3 }
     ],
     "recentFeedbacks": [
       {
