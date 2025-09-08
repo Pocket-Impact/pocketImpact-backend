@@ -263,7 +263,9 @@ info to return
     "dailyFeedbacks": [
       {
         "date": String, // ISO date
-        "Feedbacks": Number
+        "Feedbacks": Number,
+        //ADD A NEW FIELD HERE THAT WILL HOLD THE PERCENTAGE OF THE FEEDBACKS GROWTH FROM THE PREVIOUS DAY
+        "GrowthPercentage": Number
       }
     ],
     "sentiment": {
@@ -428,6 +430,27 @@ export const analyticsData = async (req, res) => {
             return Math.round(((current - previous) / previous) * 100);
         };
 
+        // Day-over-day growth (yesterday -> today)
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const startOfTomorrow = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+        const startOfYesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+
+        const [
+            todaySurveys,
+            yesterdaySurveys,
+            todayResponses,
+            yesterdayResponses
+        ] = await Promise.all([
+            Survey.countDocuments({ organisationId, createdAt: { $gte: startOfToday, $lt: startOfTomorrow } }),
+            Survey.countDocuments({ organisationId, createdAt: { $gte: startOfYesterday, $lt: startOfToday } }),
+            Response.countDocuments({ organisationId, createdAt: { $gte: startOfToday, $lt: startOfTomorrow } }),
+            Response.countDocuments({ organisationId, createdAt: { $gte: startOfYesterday, $lt: startOfToday } })
+        ]);
+
+        const surveysGrowthDayOverDay = calculateGrowth(todaySurveys, yesterdaySurveys);
+        const responsesGrowthDayOverDay = calculateGrowth(todayResponses, yesterdayResponses);
+
         // Create overview cards
         const overviewCards = [
             {
@@ -473,15 +496,19 @@ export const analyticsData = async (req, res) => {
             }
         ]);
 
-        // Fill in missing dates with 0 feedbacks
+        // Fill in missing dates with 0 feedbacks and compute GrowthPercentage day-over-day
         const formattedDailyFeedbacks = [];
         for (let i = 6; i >= 0; i--) {
             const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
             const dateString = date.toISOString().split('T')[0];
             const found = dailyFeedbacks.find(item => item._id === dateString);
+            const currentCount = found ? found.Feedbacks : 0;
+            const previousCount = formattedDailyFeedbacks.length > 0 ? formattedDailyFeedbacks[formattedDailyFeedbacks.length - 1].Feedbacks : 0;
+            const growth = previousCount === 0 ? (currentCount > 0 ? 100 : 0) : Math.round(((currentCount - previousCount) / previousCount) * 100);
             formattedDailyFeedbacks.push({
                 date: dateString,
-                Feedbacks: found ? found.Feedbacks : 0
+                Feedbacks: currentCount,
+                GrowthPercentage: growth
             });
         }
 
@@ -540,6 +567,7 @@ export const analyticsData = async (req, res) => {
         const formattedTopTopics = topTopics.map(topic => ({
             category: topic._id.charAt(0).toUpperCase() + topic._id.slice(1),
             count: topic.count,
+            percentage: Math.round((topic.count / totalFeedbacks) * 100),
             feedbacks: topic.feedbacks
         }));
 
@@ -563,8 +591,12 @@ export const analyticsData = async (req, res) => {
             data: {
                 totals: {
                     surveys: totalSurveys,
+                    surveysGrowthPercentage: surveysGrowthDayOverDay,
                     feedbacks: totalFeedbacks,
+                    // keeping feedback growth available if needed later
+                    // feedbacksGrowthPercentage: calculateGrowth(totalFeedbacks, prevFeedbacks),
                     responses: totalResponses
+                    ,responsesGrowthPercentage: responsesGrowthDayOverDay
                 },
                 overviewCards,
                 dailyFeedbacks: formattedDailyFeedbacks,
