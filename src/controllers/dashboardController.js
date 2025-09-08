@@ -24,39 +24,40 @@ export const getDashboardData = async (req, res) => {
             Feedback.countDocuments({ organisationId })
         ]);
 
-        // Get daily feedback data for the last 7 days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        
+        // Get daily feedback data for the last 7 calendar days (by exact date)
+        const nowDash = new Date();
+        const sevenDaysAgoDash = new Date(nowDash.getTime() - 7 * 24 * 60 * 60 * 1000);
+
         const dailyFeedbacks = await Feedback.aggregate([
             {
                 $match: {
                     organisationId: new mongoose.Types.ObjectId(organisationId),
-                    createdAt: { $gte: sevenDaysAgo }
+                    createdAt: { $gte: sevenDaysAgoDash }
                 }
             },
             {
                 $group: {
                     _id: {
-                        $dayOfWeek: "$createdAt"
+                        $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
                     },
                     count: { $sum: 1 }
                 }
             },
-            {
-                $sort: { _id: 1 }
-            }
+            { $sort: { _id: 1 } }
         ]);
 
-        // Format daily feedback data - MongoDB returns 1=Sunday, 2=Monday, etc.
+        // Build last 7 days series with correct day names
         const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const formattedDailyFeedbacks = dayOrder.map((day, index) => {
-            const found = dailyFeedbacks.find(item => item._id === index + 1);
-            return {
-                day: day,
-                Feedbacks: found ? found.count : 0,
-            };
-        });
+        const formattedDailyFeedbacks = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(nowDash.getTime() - i * 24 * 60 * 60 * 1000);
+            const dateKey = d.toISOString().split('T')[0];
+            const found = dailyFeedbacks.find(item => item._id === dateKey);
+            formattedDailyFeedbacks.push({
+                day: dayOrder[d.getDay()],
+                Feedbacks: found ? found.count : 0
+            });
+        }
 
         // Get sentiment analysis
         const sentimentData = await Feedback.aggregate([
