@@ -374,6 +374,8 @@ export const getDailyCategoriesData = async (req, res) => {
             data: result
         });
 
+
+
     } catch (error) {
         console.error('Daily categories data error:', error);
         res.status(500).json({
