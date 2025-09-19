@@ -5,14 +5,19 @@ export default {
       useESM: true,
     },
   },
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-  },
+  moduleNameMapper: {},
   transform: {},
-  testMatch: ['**/src/tests/**/*.test.js'],
+  testMatch: [
+    '**/src/core/tests/**/*.test.js',
+    '**/src/dashboard/tests/**/*.test.js',
+    '**/src/surveys/tests/**/*.test.js',
+    '**/src/feedback/tests/**/*.test.js',
+    '**/src/reports/tests/**/*.test.js',
+    '**/src/shared/**/?(*.)+(test).js'
+  ],
   collectCoverageFrom: [
     'src/**/*.js',
-    '!src/tests/**',
+    '!src/**/tests/**',
     '!src/server.js',
     '!src/app.js'
   ],

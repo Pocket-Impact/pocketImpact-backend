@@ -4,7 +4,6 @@ node_modules/
 # Environment variables
 .env
 
-*.tldr
 # Logs
 logs/
 *.log
@@ -16,7 +15,8 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-API_QUICK_REFERENCE.md
+docs/*.tldr
+docs/API_QUICK_REFERENCE.md
 # Runtime data
 pids/
 *.pid
