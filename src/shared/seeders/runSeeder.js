@@ -5,9 +5,9 @@ import bcrypt from 'bcrypt';
 import connectDB from '../config/db.js';
 import Organisation from '../../core/models/Organisation.js';
 import User from '../../core/models/User.js';
-import Survey from '../../surveys/models/Survey.js';
-import Response from '../../surveys/models/Response.js';
-import Feedback from '../../feedback/models/Feedback.js';
+import Survey from '../../community_feedback/surveys/models/Survey.js';
+import Response from '../../community_feedback/surveys/models/Response.js';
+import Feedback from '../../community_feedback/feedback/models/Feedback.js';
 
 // Dynamic data generation functions
 const generateOrganisationName = () => {

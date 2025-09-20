@@ -1,12 +1,10 @@
 import express from 'express';
-import authRoutes from './core/routes/authRoutes.js';
-import userRoutes from './core/routes/userRoutes.js';
-import responseRoutes from './surveys/routes/responseRoutes.js';
-import surveyRoutes from './surveys/routes/surveyRoutes.js';
+import { authRoutes, userRoutes } from './core/index.js';
+import { responseRoutes, surveyRoutes } from './community_feedback/surveys/index.js';
 import dotenv from 'dotenv';
-import feedbackRoutes from './feedback/routes/feedbackRoutes.js';
-import dashboardRoutes from './dashboard/routes/dashboardRoutes.js';
-import reportsRoutes from './reports/routes/reportsRoutes.js';
+import { feedbackRoutes } from './community_feedback/feedback/index.js';
+import { dashboardRoutes } from './community_feedback/dashboard/index.js';
+import { reportsRoutes } from './community_feedback/reports/index.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 dotenv.config();
